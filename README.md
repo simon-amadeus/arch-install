@@ -13,11 +13,12 @@ set up wifi and execute:
 
 # Download the files
 git clone https://gitlab.com/simon.amadeus/arch-install.git
-cd arch-install
+mv arch-install/install* . 
 
 # Optional: Edit variables in install.env
 
 # Execute the script
+# The script must be executed from the default directory!!!
 ./install.sh
 
 ``` 
