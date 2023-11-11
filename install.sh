@@ -362,13 +362,20 @@ EOF_NETWORKD
     systemctl enable iwd.service || handle_error "Failed to enable iwd service."
     log "iwd service enabled for wireless network management."
 
-    # Configure systemd-resolved with Cloudflare DNS and enable DNS Over TLS
+    # Configure systemd-resolved
     mkdir -p /etc/systemd/resolved.conf.d
-    cat << EOF_RESOLVED > /etc/systemd/resolved.conf.d/cloudflare_dns_tls.conf
+    cat << EOF_RESOLVED > /etc/systemd/resolved.conf.d/dns.conf
 [Resolve]
+# Cloudflare
 DNS=1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
-FallbackDNS=8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844
-DNSOverTLS=yes
+# OpenDNS
+FallbackDNS=208.67.222.222 208.67.220.220 2620:119:53::53 2620:119:35::35
+DNSSEC=allow-downgrade
+DNSOverTLS=opportunistic
+Cache=yes
+# Disable LLMNR and MulticastDNS, to reduce network noise
+LLMNR=no
+MulticastDNS=no
 EOF_RESOLVED
     log "systemd-resolved configured to use Cloudflare DNS with DNS Over TLS."
 
