@@ -547,6 +547,7 @@ enable_essential_services() {
     systemctl enable fstrim.timer || log "Failed to enable fstrim timer."
     systemctl enable systemd-networkd.service || log "Failed to enable systemd-networkd service."
     systemctl enable systemd-resolved.service || log "Failed to enable systemd-resolved service."
+    systemctl enable systemd-homed.service || log "Failed to enable systemd-resolved service."
     log "Essential services enabled."
 }
 
