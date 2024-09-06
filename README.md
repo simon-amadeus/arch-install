@@ -4,29 +4,29 @@ This project contains tools for a scripted semi-automated installation of Arch L
 
 
 ## Usage
-
-After booting with the arch live iso,
-set up wifi and execute:
-
+### 1. Create custom arch iso
 ```bash
-# After booting from the installation medium
+./build.sh my_custom_arch.iso
+```
 
-# Download the files
-git clone https://gitlab.com/simon.amadeus/arch-install.git
-mv arch-install/install* . 
+### 2. Test the custom iso
+```bash
+run_archiso -i my_custom_arch.iso
 
-# Optional: Edit variables in install.env
+# after booting, check if files are in the default directory
+ls
+```
 
-# Execute the script
+### 2. Boot the custom iso
+```bash
+# Find the usb drive
+sudo fdisk -l
+# Write the iso to the usb drive
+sudo dd if=my_custom_arch.iso of=<your-usb-drive> bs=16M oflag=direct status=progress
+```
+
+### 3. Install Arch Linux
+```bash
 # The script must be executed from the default directory!!!
 ./install.sh
-
 ``` 
-
-### Alternative
-
-Copy those files to a usb stick and mount into the live system.
-Edit vars and execute the script.
-
-The script will also handle the wifi setup.
-
