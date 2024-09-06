@@ -21,7 +21,7 @@ fi
 # Function to clean up temporary files on exit
 cleanup() {
     echo "Cleaning up temporary files..."
-    rm -rf "$TMP_DIR"
+    sudo rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
 
