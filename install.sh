@@ -106,6 +106,18 @@ wipe_disk() {
 
 wipe_disk "$DISK"
 
+# Function to determine the correct partition naming scheme
+get_partition_suffix() {
+    if [[ "$DISK" =~ nvme ]]; then
+        PART_SUFFIX="p"
+    else
+        PART_SUFFIX=""
+    fi
+    log "Using partition suffix '$PART_SUFFIX' for disk '$DISK'."
+}
+
+get_partition_suffix
+
 # Create GPT partition table
 log "Creating GPT partition table..."
 parted --script "${DISK}" mklabel gpt || exit 1
@@ -120,13 +132,13 @@ parted --script --align optimal "${DISK}" mkpart primary linux-swap "${ROOT_PART
 parted --script --align optimal "${DISK}" mkpart primary ext4 "${SWAP_PARTITION_END}" 100% || exit 1
 
 # Format the partitions
-mkfs.fat -F32 "${DISK}p1" || exit 1  # ESP
+mkfs.fat -F32 "${DISK}${PART_SUFFIX}1" || exit 1  # ESP
 log "Disk partitioning complete."
 
 # Disk Encryption (LUKS)
 log "Preparing disk encryption..."
-cryptsetup luksFormat --type luks2 "${DISK}p2" -d - || exit 1
-cryptsetup open "${DISK}p2" cryptroot -d - || exit 1
+cryptsetup luksFormat --type luks2 "${DISK}${PART_SUFFIX}2" -d - || exit 1
+cryptsetup open "${DISK}${PART_SUFFIX}2" cryptroot -d - || exit 1
 mkfs.ext4 /dev/mapper/cryptroot || exit 1
 
 # Mount the root partition
@@ -139,19 +151,19 @@ mkdir /mnt/{boot,home} || exit 1
 mkdir /mnt/etc || exit 1
 dd if=/dev/urandom of=/mnt/etc/crypthomekey bs=512 count=8 status=none || exit 1
 chmod 600 /mnt/etc/crypthomekey || exit 1
-cryptsetup luksAddKey "${DISK}p4" /mnt/etc/crypthomekey
+cryptsetup luksAddKey "${DISK}${PART_SUFFIX}4" /mnt/etc/crypthomekey
 
 # Encrypt and open the home partition using the keyfile
-cryptsetup -d /mnt/etc/crypthomekey luksFormat --type luks2 "${DISK}p4" || exit 1
-cryptsetup -d /mnt/etc/crypthomekey open "${DISK}p4" crypthome || exit 1
+cryptsetup -d /mnt/etc/crypthomekey luksFormat --type luks2 "${DISK}${PART_SUFFIX}4" || exit 1
+cryptsetup -d /mnt/etc/crypthomekey open "${DISK}${PART_SUFFIX}4" crypthome || exit 1
 mkfs.ext4 /dev/mapper/crypthome || exit 1
 
 # Set up and turn on swap
-mkswap "${DISK}p3" || exit 1
-swapon "${DISK}p3" || exit 1
+mkswap "${DISK}${PART_SUFFIX}3" || exit 1
+swapon "${DISK}${PART_SUFFIX}3" || exit 1
 
 # Mount the filesystems
-mount "${DISK}p1" /mnt/boot || exit 1
+mount "${DISK}${PART_SUFFIX}1" /mnt/boot || exit 1
 mount /dev/mapper/crypthome /mnt/home || exit 1
 
 log "Disk encryption and mounting complete."
@@ -246,7 +258,7 @@ configure_mkinitcpio() {
 configure_bootloader() {
     mountpoint -q /boot || handle_error "The EFI system partition is not mounted."
     bootctl --path=/boot install || handle_error "Failed to install systemd-boot."
-    local root_uuid=$(blkid -s UUID -o value ${DISK}p2)
+    local root_uuid=$(blkid -s UUID -o value ${DISK}${PART_SUFFIX}2)
     {
         echo "title Arch Linux (Zen)"
         echo "linux /vmlinuz-linux-zen"
@@ -260,7 +272,7 @@ configure_bootloader() {
 # Function to unlock the home partition at boot using the keyfile
 configure_crypttab() {
     [ -f /etc/crypthomekey ] || handle_error "The keyfile for the home partition was not found."
-    local home_uuid=$(blkid -s UUID -o value "${DISK}p4")
+    local home_uuid=$(blkid -s UUID -o value "${DISK}${PART_SUFFIX}4")
     echo "crypthome UUID=${home_uuid} /etc/crypthomekey luks,discard" >> /etc/crypttab
     log "Home partition keyfile configured in crypttab."
 }
