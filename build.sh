@@ -36,16 +36,11 @@ check_success() {
 # Install archiso if not already installed
 if ! command -v mkarchiso &> /dev/null; then
     echo "Installing archiso package..."
-    sudo pacman -Sy archiso
+    sudo pacman -S archiso
     check_success "Installing archiso"
 else
     echo "archiso is already installed."
 fi
-
-# Create custom iso source directory inside the temporary directory
-echo "Creating custom ISO source directory in temporary location..."
-mkdir -p "$CUSTOM_ISO_DIR"
-check_success "Creating custom ISO source directory"
 
 # Copy releng source files to the temporary directory
 echo "Copying releng files to custom ISO directory..."
