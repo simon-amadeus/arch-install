@@ -4,7 +4,7 @@
 
 # Set variables
 ARCHISO_SOURCE="/usr/share/archiso/configs/releng/"
-TMP_DIR=$(mktemp -d)  # Create a temporary directory
+TMP_DIR="$(pwd)/.tmp" # Create a temporary directory
 TMP_WORK_DIR="$TMP_DIR/work"
 TMP_OUT_DIR="$TMP_DIR/out"
 CUSTOM_ISO_DIR="$TMP_DIR/archiso"
@@ -32,6 +32,11 @@ check_success() {
         exit 1
     fi
 }
+
+echo "Creating temporary directory..."
+mkdir -p "$TMP_DIR"
+check_success "Creating temporary directory"
+
 
 # Install archiso if not already installed
 if ! command -v mkarchiso &> /dev/null; then
