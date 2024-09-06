@@ -28,5 +28,6 @@ sudo dd if=my_custom_arch.iso of=<your-usb-drive> bs=16M oflag=direct status=pro
 ### 3. Install Arch Linux
 ```bash
 # The script must be executed from the default directory!!!
+loadkeys de-latin1
 ./install.sh
 ``` 
