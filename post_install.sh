@@ -3,11 +3,11 @@
 
 # Install Yay
 pacman -S --needed git base-devel
-git clone https://aur.archlinux.org/yay-bin.git
-cd yay-bin
+git clone https://aur.archlinux.org/paru.git
+cd paru
 makepkg -si
 cd ..
-rm -rf yay-bin
+rm -rf paru
 
 
 # Install 1Password
@@ -24,7 +24,7 @@ echo "Installing 1Password CLI..."
 
 # Hardcoded version for initial install
 ARCH="amd64"
-VERSION="2.22.0"
+VERSION="2.30.0"
 
 wget "https://cache.agilebits.com/dist/1P/op2/pkg/v$VERSION/op_linux_${ARCH}_v$VERSION.zip" -O op.zip
 unzip -d op op.zip
@@ -65,19 +65,10 @@ else
     echo "1Password CLI is already the latest version."
 fi
 
-
-# Install 1password hetzner cloud plugin
-sudo pacman -S hcloud
-op signin
-op plugin init hcloud
-
-
 # Install Visual Studio Code
-yay -S visual-studio-code-bin
-
+paru -S visual-studio-code-bin
 
 # Install file browser
 sudo pacman -S rustup
 rustup default stable
-yay -S joshuto
-
+paru -S joshuto-bin
