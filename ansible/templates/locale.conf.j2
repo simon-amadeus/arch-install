@@ -1,0 +1,4 @@
+LANG={{ locale }}
+{% for key, value in (locale_overrides | default({})).items() %}
+{{ key }}={{ value }}
+{% endfor %}

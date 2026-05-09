@@ -1,0 +1,26 @@
+---
+- name: "locale: write /etc/locale.gen"
+  ansible.builtin.template:
+    src: locale.gen.j2
+    dest: /etc/locale.gen
+    mode: '0644'
+  register: locale_gen
+
+- name: "locale: run locale-gen"
+  ansible.builtin.command: locale-gen
+  when: locale_gen.changed
+  changed_when: true
+
+- name: "locale: write /etc/locale.conf"
+  ansible.builtin.template:
+    src: locale.conf.j2
+    dest: /etc/locale.conf
+    mode: '0644'
+
+- name: "locale: write /etc/vconsole.conf"
+  ansible.builtin.copy:
+    dest: /etc/vconsole.conf
+    mode: '0644'
+    content: |
+      KEYMAP={{ keymap }}
+      {% if console_font is defined %}FONT={{ console_font }}{% endif %}

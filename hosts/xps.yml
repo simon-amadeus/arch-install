@@ -1,0 +1,66 @@
+---
+# Host configuration for the Dell XPS.
+# This is the single source of truth for the install — bootstrap reads it,
+# Ansible reads it. No prompts at install time except the disk passphrase.
+
+hostname: xps
+
+# Locale & console
+keymap: de-latin1
+console_font: ter-132b
+timezone: Europe/Berlin
+locale: en_US.UTF-8
+additional_locales:
+  - de_DE.UTF-8
+locale_overrides:
+  LC_TIME: de_DE.UTF-8
+  LC_NUMERIC: de_DE.UTF-8
+  LC_MONETARY: de_DE.UTF-8
+  LC_PAPER: de_DE.UTF-8
+  LC_MEASUREMENT: de_DE.UTF-8
+
+# Disk layout
+# - One LUKS2 container holds btrfs with subvolumes
+# - Swap lives as a btrfs swapfile inside the encrypted volume
+disk:
+  device: /dev/nvme0n1
+  esp_size: 1GiB           # bumped from 512MiB so UKIs fit comfortably
+  swapfile_size: 16G       # GiB, btrfs swapfile inside @swap subvolume
+
+# Kernel & microcode
+kernel: linux-zen
+microcode: intel-ucode
+
+# User account created during install
+user:
+  name: knowone
+  shell: /bin/zsh
+  groups:
+    - wheel
+  dotfiles_repo: https://gitlab.com/simon.amadeus/dotfiles.git
+
+# Optional features. Each maps to an Ansible task that's skipped when false.
+features:
+  audio: true              # pipewire stack
+  bluetooth: true
+  printing: false
+  firewalld: true
+  usb_automount: false
+  desktop: sway            # one of: none, minimal, sway
+  tpm2_unlock: false       # set true once TPM2 enrollment is wired up
+
+# Network configuration applied to the installed system
+network:
+  dns:
+    primary:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 2606:4700:4700::1111
+      - 2606:4700:4700::1001
+    fallback:
+      - 208.67.222.222
+      - 208.67.220.220
+      - 2620:119:53::53
+      - 2620:119:35::35
+  dns_over_tls: opportunistic
+  dnssec: allow-downgrade

@@ -1,6 +1,6 @@
-.tmp
-archiso
-work
-out
-custom_arch.iso
-my_custom_arch.iso
+.tmp-iso/
+.tmp-vm/
+*.iso
+*.log
+*.retry
+__pycache__/

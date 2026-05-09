@@ -1,0 +1,32 @@
+---
+# Creates the primary user account. Passwords are *not* set here — bootstrap
+# runs `passwd` interactively after the playbook completes, keeping secrets
+# out of the playbook entirely.
+
+- name: "users: install zsh (default shell)"
+  ansible.builtin.package:
+    name: zsh
+    state: present
+  when: user.shell | default('') == '/bin/zsh'
+
+- name: "users: ensure wheel group exists"
+  ansible.builtin.group:
+    name: wheel
+    state: present
+
+- name: "users: create {{ user.name }}"
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    shell: "{{ user.shell | default('/bin/bash') }}"
+    groups: "{{ user.groups | default(['wheel']) }}"
+    append: true
+    create_home: true
+    state: present
+
+- name: "users: grant sudo to wheel via drop-in"
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/10-wheel
+    mode: '0440'
+    content: |
+      %wheel ALL=(ALL:ALL) ALL
+    validate: visudo -cf %s

@@ -1,0 +1,49 @@
+---
+# Build a Unified Kernel Image instead of a separate kernel + initramfs.
+# systemd-boot auto-discovers UKIs in /boot/EFI/Linux/ — no loader entries
+# need to be hand-written.
+#
+# Uses systemd-based hooks (sd-encrypt) so the same flow can later opt into
+# TPM2 unlock via systemd-cryptenroll without restructuring.
+
+- name: "mkinitcpio: write /etc/mkinitcpio.conf"
+  ansible.builtin.template:
+    src: mkinitcpio.conf.j2
+    dest: /etc/mkinitcpio.conf
+    mode: '0644'
+  register: mkinitcpio_conf
+
+- name: "mkinitcpio: write kernel command line"
+  ansible.builtin.template:
+    src: kernel-cmdline.j2
+    dest: /etc/kernel/cmdline
+    mode: '0644'
+  register: kernel_cmdline
+
+- name: "mkinitcpio: ensure /boot/EFI/Linux exists for UKI output"
+  ansible.builtin.file:
+    path: /boot/EFI/Linux
+    state: directory
+    mode: '0755'
+
+- name: "mkinitcpio: write UKI preset for {{ kernel }}"
+  ansible.builtin.template:
+    src: kernel.preset.j2
+    dest: "/etc/mkinitcpio.d/{{ kernel }}.preset"
+    mode: '0644'
+  register: kernel_preset
+
+- name: "mkinitcpio: regenerate (UKI build)"
+  ansible.builtin.command: "mkinitcpio -P"
+  when: mkinitcpio_conf.changed or kernel_cmdline.changed or kernel_preset.changed
+  changed_when: true
+
+- name: "mkinitcpio: confirm UKI was written"
+  ansible.builtin.stat:
+    path: "/boot/EFI/Linux/arch-{{ kernel }}.efi"
+  register: uki_stat
+
+- name: "mkinitcpio: assert UKI exists"
+  ansible.builtin.assert:
+    that: uki_stat.stat.exists
+    fail_msg: "UKI was not produced at /boot/EFI/Linux/arch-{{ kernel }}.efi"

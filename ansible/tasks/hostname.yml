@@ -1,0 +1,15 @@
+---
+- name: "hostname: write /etc/hostname"
+  ansible.builtin.copy:
+    dest: /etc/hostname
+    mode: '0644'
+    content: "{{ hostname }}\n"
+
+- name: "hostname: write /etc/hosts"
+  ansible.builtin.copy:
+    dest: /etc/hosts
+    mode: '0644'
+    content: |
+      127.0.0.1   localhost
+      ::1         localhost
+      127.0.1.1   {{ hostname }}.localdomain {{ hostname }}

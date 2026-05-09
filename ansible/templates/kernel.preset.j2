@@ -1,0 +1,7 @@
+# Managed by Ansible. mkinitcpio preset for building a Unified Kernel Image.
+ALL_kver="/boot/vmlinuz-{{ kernel }}"
+
+PRESETS=('default')
+
+default_uki="/boot/EFI/Linux/arch-{{ kernel }}.efi"
+default_options="--splash /usr/share/systemd/bootctl/splash-arch.bmp"

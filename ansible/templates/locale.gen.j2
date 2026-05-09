@@ -1,0 +1,4 @@
+{{ locale }} UTF-8
+{% for loc in additional_locales | default([]) %}
+{{ loc }} UTF-8
+{% endfor %}

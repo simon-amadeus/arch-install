@@ -1,0 +1,49 @@
+---
+- name: "network: ensure config dirs exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /etc/iwd
+    - /etc/systemd/network
+    - /etc/systemd/resolved.conf.d
+
+- name: "network: write iwd main.conf"
+  ansible.builtin.copy:
+    dest: /etc/iwd/main.conf
+    mode: '0644'
+    content: |
+      [General]
+      EnableNetworkConfiguration=true
+
+      [Network]
+      NameResolvingService=systemd
+
+- name: "network: write systemd-networkd wireless profile"
+  ansible.builtin.copy:
+    dest: /etc/systemd/network/25-wireless.network
+    mode: '0644'
+    content: |
+      [Match]
+      Type=wlan
+
+      [Network]
+      DHCP=yes
+      IPv6PrivacyExtensions=yes
+
+      [DHCP]
+      RouteMetric=20
+
+- name: "network: write resolved DNS config"
+  ansible.builtin.template:
+    src: resolved-dns.conf.j2
+    dest: /etc/systemd/resolved.conf.d/dns.conf
+    mode: '0644'
+
+- name: "network: link /etc/resolv.conf to systemd-resolved stub"
+  ansible.builtin.file:
+    src: /run/systemd/resolve/stub-resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+    force: true

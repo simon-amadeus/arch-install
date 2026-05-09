@@ -1,0 +1,16 @@
+---
+# Ansible's systemd module talks to the running systemd via dbus, which isn't
+# available inside a chroot. systemctl enable just creates symlinks under
+# /etc/systemd/system/*.target.wants/ — works fine without a running systemd.
+# Re-running is safe: systemctl exits 0 when already enabled.
+
+- name: "services: enable core systemd units"
+  ansible.builtin.command: "systemctl enable {{ item }}"
+  register: enable_result
+  changed_when: "'Created symlink' in enable_result.stderr or 'Created symlink' in enable_result.stdout"
+  loop:
+    - iwd.service
+    - systemd-networkd.service
+    - systemd-resolved.service
+    - systemd-timesyncd.service
+    - fstrim.timer

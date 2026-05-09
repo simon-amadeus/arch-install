@@ -1,0 +1,39 @@
+---
+# systemd-boot. Auto-discovers UKIs from /boot/EFI/Linux — no loader entry
+# files needed.
+
+- name: "bootloader: check ESP is mounted at /boot"
+  ansible.builtin.command: mountpoint -q /boot
+  changed_when: false
+
+- name: "bootloader: install systemd-boot to ESP"
+  ansible.builtin.command: bootctl --esp-path=/boot install
+  args:
+    creates: /boot/EFI/systemd/systemd-bootx64.efi
+
+- name: "bootloader: write loader.conf"
+  ansible.builtin.copy:
+    dest: /boot/loader/loader.conf
+    mode: '0644'
+    content: |
+      default  arch-{{ kernel }}.efi
+      timeout  3
+      console-mode max
+      editor   no
+      auto-entries yes
+      auto-firmware yes
+
+- name: "bootloader: enable systemd-boot pacman hook for auto-updates"
+  ansible.builtin.copy:
+    dest: /etc/pacman.d/hooks/95-systemd-boot.hook
+    mode: '0644'
+    content: |
+      [Trigger]
+      Type = Package
+      Operation = Upgrade
+      Target = systemd
+
+      [Action]
+      Description = Updating systemd-boot...
+      When = PostTransaction
+      Exec = /usr/bin/bootctl update
