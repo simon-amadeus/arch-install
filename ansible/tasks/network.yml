@@ -41,9 +41,18 @@
     dest: /etc/systemd/resolved.conf.d/dns.conf
     mode: '0644'
 
+- name: "network: check if /etc/resolv.conf is a bind mount (arch-chroot context)"
+  ansible.builtin.command: findmnt --noheadings /etc/resolv.conf
+  register: resolv_bindmount
+  changed_when: false
+  failed_when: false
+
 - name: "network: link /etc/resolv.conf to systemd-resolved stub"
   ansible.builtin.file:
     src: /run/systemd/resolve/stub-resolv.conf
     dest: /etc/resolv.conf
     state: link
     force: true
+  when: resolv_bindmount.rc != 0
+  # Skipped when running inside arch-chroot: the bootstrap handles this case by
+  # creating the symlink directly on the mounted filesystem after the chroot exits.

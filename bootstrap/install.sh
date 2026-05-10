@@ -51,6 +51,7 @@ main() {
     copy_iwd_state
     stage_ansible "$REPO_ROOT"
     run_ansible_in_chroot "$host"
+    setup_resolv_symlink
     set_passwords_in_chroot
 
     log "install complete. Unmount with:  umount -R ${MOUNT_ROOT} && swapoff -a && reboot"

@@ -71,6 +71,14 @@ run_ansible_in_chroot() {
             /root/install/ansible/system.yml
 }
 
+setup_resolv_symlink() {
+    # arch-chroot bind-mounts the host's /etc/resolv.conf during the Ansible run,
+    # blocking Ansible's atomic rename. After the chroot exits the bind mount is
+    # released, so we create the symlink here directly on the mounted filesystem.
+    log "linking /etc/resolv.conf → systemd-resolved stub"
+    ln -sf /run/systemd/resolve/stub-resolv.conf "${MOUNT_ROOT}/etc/resolv.conf"
+}
+
 set_passwords_in_chroot() {
     log "setting root password (interactive)"
     arch-chroot "$MOUNT_ROOT" passwd
