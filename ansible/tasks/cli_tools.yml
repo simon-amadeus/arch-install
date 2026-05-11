@@ -12,5 +12,6 @@
       - bottom             # htop replacement (binary: btm)
       - duf                # df replacement
       - dust               # du replacement
-      - zsh-autosuggestions  # fish-style inline suggestions
+      - zsh-autosuggestions    # fish-style inline suggestions
+      - zsh-syntax-highlighting  # real-time command highlighting
     state: present
