@@ -1,7 +1,7 @@
 ---
-# Install sbctl, create Secure Boot keys, and sign the UKI. Runs in the chroot.
-# Key enrollment into UEFI firmware happens in phase 3 (secure_boot_enroll.yml)
-# after first boot, once the UEFI is in Setup Mode.
+# Install sbctl, create Secure Boot keys, and sign the UKI. Runs on the booted system.
+# Key enrollment into UEFI firmware follows immediately via secure_boot_enroll.yml.
+# Pre-condition: UEFI must already be in Setup Mode before this task group runs.
 
 - name: "secure_boot: install sbctl"
   ansible.builtin.package:

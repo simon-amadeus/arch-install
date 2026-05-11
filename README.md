@@ -9,8 +9,8 @@ bash bootstrap for the destructive parts, and Ansible for everything else.
 |---|---|---|
 | 0. ISO | Build a custom live ISO with this repo + ansible baked in | [iso/build.sh](iso/build.sh) |
 | 1. Bootstrap | Partition, LUKS, btrfs subvolumes, pacstrap base | [bootstrap/install.sh](bootstrap/install.sh) |
-| 2. System | Locale, time, hostname, network, UKI, systemd-boot, user account, bluetooth, firewall, autologin, snapshots, Secure Boot signing | [ansible/system.yml](ansible/system.yml) |
-| 3. User | AUR helper, audio (pipewire + linger), sway desktop, dotfiles, Secure Boot enrollment | [ansible/user.yml](ansible/user.yml) |
+| 2. System | Locale, time, hostname, network, UKI, systemd-boot, user account, bluetooth, firewall, autologin, snapshots | [ansible/system.yml](ansible/system.yml) |
+| 3. User | AUR helper, audio, sway desktop, dotfiles, Secure Boot (keys + signing + enrollment) | [ansible/user.yml](ansible/user.yml) |
 
 Phase 2 runs inside `arch-chroot`. Phase 3 runs on the booted system and
 requires sudo (`-K`). Everything that only needs file writes or `systemctl
@@ -95,16 +95,22 @@ Use `--tags <tag>` to run a single step — valid tags:
 
 ### Secure Boot
 
-Set `features.secure_boot: true` in the host config before running the
-installer. Phase 2 creates the sbctl keys and signs the UKI; the pacman hook
-bundled with sbctl re-signs on every kernel update.
+The entire Secure Boot flow runs in phase 3 (booted system). Sequence:
 
-Enrollment requires the UEFI to be in Setup Mode (clear all Secure Boot keys
-in firmware settings), then on the booted system:
+1. Install and verify the system boots normally (`features.secure_boot: false`)
+2. Boot into UEFI firmware settings → Secure Boot → delete all existing keys (enters Setup Mode)
+3. Boot back into the installed system
+4. Set `features.secure_boot: true` in the host config
+5. Run:
 
 ```bash
 ~/arch-install/bootstrap/setup-user.sh xps --tags secure_boot
 ```
+
+This creates the sbctl keys, signs the UKI, and enrolls the keys into firmware
+in one pass. The `--microsoft` flag is included so hardware with Microsoft-signed
+option ROMs (common on XPS) continues to work. The pacman hook bundled with sbctl
+re-signs automatically on every kernel or bootloader update.
 
 Enable `features.tpm2_unlock` after Secure Boot is established.
 
@@ -119,4 +125,6 @@ re-run only the Ansible playbook:
 
 Valid phase 2 tags: `locale`, `time`, `hostname`, `network`, `mkinitcpio`,
 `bootloader`, `users`, `services`, `bluetooth`, `firewall`, `autologin`,
-`snapshots`, `secure_boot`.
+`snapshots`.
+
+Valid phase 3 tags: `cli`, `aur`, `audio`, `desktop`, `dotfiles`, `secure_boot`.
