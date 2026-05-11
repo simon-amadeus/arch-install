@@ -1,12 +1,24 @@
 ---
 # Installs paru (AUR helper) as the primary user.
-# Uses paru-bin from the AUR to avoid a full Rust toolchain compile.
-# makepkg refuses to run as root, so both clone and build run as user.name.
+# Uses paru-bin (pre-compiled) to avoid a full Rust toolchain compile.
+#
+# Build and install are intentionally separated: makepkg runs as the user
+# with -d (no dep-install) so it never calls sudo internally. The resulting
+# package is then installed by Ansible as root, which already holds privilege.
 
 - name: "aur: check if paru is installed"
   ansible.builtin.stat:
     path: /usr/bin/paru
   register: paru_stat
+
+- name: "aur: create AUR build directory"
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: '0755'
+  when: not paru_stat.stat.exists
 
 - name: "aur: clone paru-bin from AUR"
   ansible.builtin.git:
@@ -16,10 +28,23 @@
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
 
-- name: "aur: build and install paru-bin"
+- name: "aur: build paru-bin package"
   ansible.builtin.command:
-    cmd: makepkg -si --noconfirm
+    cmd: makepkg --noconfirm --noprogressbar --skippgpcheck -d
     chdir: "/home/{{ user.name }}/.cache/aur/paru-bin"
   become_user: "{{ user.name }}"
+  when: not paru_stat.stat.exists
+  changed_when: true
+
+- name: "aur: find built package"
+  ansible.builtin.find:
+    paths: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    patterns: "*.pkg.tar.zst"
+  register: paru_pkg
+  when: not paru_stat.stat.exists
+
+- name: "aur: install paru-bin with pacman"
+  ansible.builtin.command:
+    cmd: "pacman -U --noconfirm {{ paru_pkg.files[0].path }}"
   when: not paru_stat.stat.exists
   changed_when: true

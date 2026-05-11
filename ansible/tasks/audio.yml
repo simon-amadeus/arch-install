@@ -12,8 +12,13 @@
 
 # Linger lets user services (pipewire, wireplumber) start at boot without
 # a graphical login session. Required for headless audio consumers too.
+- name: "audio: check linger status for {{ user.name }}"
+  ansible.builtin.command: "loginctl show-user {{ user.name }} --property=Linger"
+  register: linger_status
+  changed_when: false
+  failed_when: false
+
 - name: "audio: enable linger for {{ user.name }}"
   ansible.builtin.command: "loginctl enable-linger {{ user.name }}"
-  register: linger_result
-  changed_when: linger_result.rc == 0
-  failed_when: false
+  when: "'Linger=yes' not in linger_status.stdout"
+  changed_when: true
