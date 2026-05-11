@@ -78,17 +78,6 @@ and applies your dotfiles via chezmoi. Run with `--tags <tag>` to apply a
 single step — valid tags: `aur`, `audio`, `bluetooth`, `firewall`, `desktop`,
 `dotfiles`.
 
-### Test in qemu before flashing USB
-
-```bash
-./iso/build.sh
-./tests/vm.sh install        # boots ISO with a fresh 32G qcow2, drive install manually
-./tests/vm.sh boot           # boots the disk after install (no ISO) to verify
-./tests/vm.sh clean          # nuke the test disk + nvram
-```
-
-Requires `qemu-full` and `edk2-ovmf`.
-
 ### Re-running after a failure
 
 If the Ansible playbook fails, the disk is already prepared — fix the
@@ -101,14 +90,3 @@ arch-chroot /mnt ansible-playbook \
     /root/install/ansible/system.yml \
     --tags <failed-tag>     # optional: locale, network, bootloader, ...
 ```
-
-## Status
-
-Phase 1 + 2 + 3 implemented. Still to do:
-
-- [ ] snapper config + pre-pacman snapshots
-- [ ] TPM2 auto-unlock via `systemd-cryptenroll` (`tpm2_unlock: true` in host config)
-- [ ] qemu-based smoke test in `tests/`
-
-The original installer is preserved in [legacy/](legacy/) for reference
-during the rebuild.
