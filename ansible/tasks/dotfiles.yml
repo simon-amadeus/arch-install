@@ -55,9 +55,22 @@
     depth: 1
   register: stow_pkg_dirs
 
+# Two-step: delete all existing stow-managed symlinks first, then lay down
+# fresh ones. --restow processes packages sequentially and errors when it
+# finds a symlink it just created for package A while processing package B.
+# Splitting delete + stow avoids that entirely.
+- name: "dotfiles: destow all packages"
+  ansible.builtin.command:
+    argv: "{{ ['stow', '--delete', '--dir', '/home/' + user.name + '/dotfiles', '--target', '/home/' + user.name] + _pkgs }}"
+  become_user: "{{ user.name }}"
+  vars:
+    _pkgs: "{{ stow_pkg_dirs.files | map(attribute='path') | map('basename') | reject('match', '^[.]') | list }}"
+  when: _pkgs | length > 0
+  changed_when: false
+
 - name: "dotfiles: stow all packages"
   ansible.builtin.command:
-    argv: "{{ ['stow', '--restow', '--no-folding', '--dir', '/home/' + user.name + '/dotfiles', '--target', '/home/' + user.name] + (stow_pkg_dirs.files | map(attribute='path') | map('basename') | reject('match', '^[.]') | list) }}"
+    argv: "{{ ['stow', '--no-folding', '--dir', '/home/' + user.name + '/dotfiles', '--target', '/home/' + user.name] + _pkgs }}"
   become_user: "{{ user.name }}"
   vars:
     _pkgs: "{{ stow_pkg_dirs.files | map(attribute='path') | map('basename') | reject('match', '^[.]') | list }}"
