@@ -37,7 +37,7 @@ user:
   shell: /bin/zsh
   groups:
     - wheel
-  dotfiles_repo: https://gitlab.com/simon.amadeus/dotfiles.git
+  dotfiles_repo: https://github.com/simon-amadeus/dotfiles.git
 
 # Optional features. Each maps to an Ansible task that's skipped when false.
 features:
