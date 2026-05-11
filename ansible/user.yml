@@ -20,6 +20,10 @@
           - features is defined
         fail_msg: "host config is missing required keys"
 
+    - name: CLI tools (bat, lsd, helix, starship, …)
+      ansible.builtin.import_tasks: tasks/cli_tools.yml
+      tags: [cli]
+
     - name: AUR helper (paru)
       ansible.builtin.import_tasks: tasks/aur_helper.yml
       tags: [aur]
@@ -37,7 +41,7 @@
     - name: Dotfiles (bare git)
       ansible.builtin.import_tasks: tasks/dotfiles.yml
       tags: [dotfiles]
-      when: user.dotfiles_repo is defined
+      when: user.dotfiles_repo is defined and features.dotfiles | default(false)
 
     - name: Secure Boot key enrollment into UEFI
       ansible.builtin.import_tasks: tasks/secure_boot_enroll.yml

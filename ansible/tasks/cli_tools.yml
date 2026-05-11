@@ -1,0 +1,16 @@
+---
+# Quality-of-life CLI tools. All are in the official Arch repos — no AUR needed.
+# Aliases in .zshrc wire these up as drop-in replacements for standard tools.
+
+- name: "cli_tools: install modern CLI utilities"
+  ansible.builtin.package:
+    name:
+      - helix              # editor (binary: hx)
+      - starship           # cross-shell prompt
+      - bat                # cat with syntax highlighting
+      - lsd                # ls with icons (needs a Nerd Font in the terminal)
+      - bottom             # htop replacement (binary: btm)
+      - duf                # df replacement
+      - dust               # du replacement
+      - zsh-autosuggestions  # fish-style inline suggestions
+    state: present

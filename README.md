@@ -88,9 +88,10 @@ After first boot, connect to wifi and run:
 ~/arch-install/bootstrap/setup-user.sh xps
 ```
 
-Installs paru, the pipewire stack, the sway desktop, and checks out your
-dotfiles (bare git repo, work-tree `~`). Use `--tags <tag>` to run a single
-step — valid tags: `aur`, `audio`, `desktop`, `dotfiles`, `secure_boot`.
+Installs CLI tools, paru, the pipewire stack, the sway desktop, and
+optionally checks out your dotfiles (bare git repo, work-tree `~`).
+Use `--tags <tag>` to run a single step — valid tags:
+`cli`, `aur`, `audio`, `desktop`, `dotfiles`, `secure_boot`.
 
 ### Secure Boot
 
