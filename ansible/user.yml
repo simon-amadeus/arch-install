@@ -38,12 +38,12 @@
       tags: [desktop]
       when: features.desktop | default('none') == 'sway'
 
-    - name: Dotfiles (bare git)
-      ansible.builtin.import_tasks: tasks/dotfiles.yml
-      tags: [dotfiles]
-      when: user.dotfiles_repo is defined and features.dotfiles | default(false)
-
     - name: Secure Boot key enrollment into UEFI
       ansible.builtin.import_tasks: tasks/secure_boot_enroll.yml
       tags: [secure_boot]
       when: features.secure_boot | default(false)
+
+    - name: Dotfiles (bare git)
+      ansible.builtin.import_tasks: tasks/dotfiles.yml
+      tags: [dotfiles]
+      when: user.dotfiles_repo is defined and features.dotfiles | default(false)

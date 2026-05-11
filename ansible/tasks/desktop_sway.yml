@@ -12,7 +12,7 @@
       # Launcher
       - wofi
       # Terminal
-      - foot
+      - alacritty
       # Notifications
       - mako
       # Screenshots
@@ -31,7 +31,7 @@
       # Fonts
       - noto-fonts
       - noto-fonts-emoji
-      - ttf-jetbrains-mono-nerd  # terminal font with Nerd Font icons (lsd, starship)
+      - ttf-sourcecodepro-nerd  # terminal font with Nerd Font icons (lsd, starship)
       # Hardware controls
       - brightnessctl
       - playerctl

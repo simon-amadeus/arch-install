@@ -51,7 +51,7 @@ features:
   snapshots: true          # snapper + snap-pac btrfs snapshot automation
   secure_boot: false       # set true once UEFI is in Setup Mode for enrollment
   tpm2_unlock: false       # enroll after secure_boot is established
-  dotfiles: false          # set true after dotfiles repo is reviewed and restructured
+  dotfiles: true           # set true after dotfiles repo is reviewed and restructured
 
 # Network configuration applied to the installed system
 network:
