@@ -11,16 +11,18 @@
   ansible.builtin.command:
     cmd: >
       git --git-dir=/home/{{ user.name }}/.dotfiles
-          --work-tree=/home/{{ user.name }}/.config
+          --work-tree=/home/{{ user.name }}
           checkout -f
   become_user: "{{ user.name }}"
   changed_when: true
+  # work-tree is ~ (not ~/.config): repo paths are relative to home root,
+  # e.g. .config/nvim/init.lua → ~/.config/nvim/init.lua.
 
 - name: "dotfiles: hide untracked files in git status"
   ansible.builtin.command:
     cmd: >
       git --git-dir=/home/{{ user.name }}/.dotfiles
-          --work-tree=/home/{{ user.name }}/.config
+          --work-tree=/home/{{ user.name }}
           config --local status.showUntrackedFiles no
   become_user: "{{ user.name }}"
   changed_when: false

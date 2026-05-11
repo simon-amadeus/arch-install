@@ -27,9 +27,25 @@
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
 
+- name: "aur: import PGP keys listed in paru-bin PKGBUILD"
+  ansible.builtin.shell:
+    cmd: |
+      bash -c '
+        source PKGBUILD 2>/dev/null
+        for key in "${validpgpkeys[@]:-}"; do
+          [ -n "$key" ] || continue
+          gpg --keyserver keyserver.ubuntu.com --recv-keys "$key" 2>/dev/null ||
+          gpg --keyserver keys.openpgp.org --recv-keys "$key"
+        done
+      '
+    chdir: "/home/{{ user.name }}/.cache/aur/paru-bin"
+  become_user: "{{ user.name }}"
+  when: not paru_stat.stat.exists
+  changed_when: true
+
 - name: "aur: build paru-bin package"
   ansible.builtin.command:
-    cmd: makepkg --noconfirm --noprogressbar --skippgpcheck -df
+    cmd: makepkg --noconfirm --noprogressbar -df
     chdir: "/home/{{ user.name }}/.cache/aur/paru-bin"
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists

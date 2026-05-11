@@ -4,6 +4,7 @@
 # Ansible reads it. No prompts at install time except the disk passphrase.
 
 hostname: xps
+reflector_country: Germany
 
 # Locale & console
 keymap: de-latin1
@@ -47,7 +48,9 @@ features:
   firewalld: true
   usb_automount: false
   desktop: sway            # one of: none, minimal, sway
-  tpm2_unlock: false       # set true once TPM2 enrollment is wired up
+  snapshots: true          # snapper + snap-pac btrfs snapshot automation
+  secure_boot: false       # set true once UEFI is in Setup Mode for enrollment
+  tpm2_unlock: false       # enroll after secure_boot is established
 
 # Network configuration applied to the installed system
 network:
@@ -62,5 +65,5 @@ network:
       - 208.67.220.220
       - 2620:119:53::53
       - 2620:119:35::35
-  dns_over_tls: opportunistic
-  dnssec: allow-downgrade
+  dns_over_tls: strict
+  dnssec: yes

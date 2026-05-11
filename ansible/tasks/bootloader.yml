@@ -16,7 +16,7 @@
     dest: /boot/loader/loader.conf
     mode: '0644'
     content: |
-      default  arch-{{ kernel }}.efi
+      default  @saved
       timeout  3
       console-mode max
       editor   no

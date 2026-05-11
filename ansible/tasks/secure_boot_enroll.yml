@@ -1,0 +1,30 @@
+---
+# Enroll the Secure Boot keys (created in phase 2) into the UEFI firmware.
+# Runs on the booted system as part of phase 3.
+#
+# Pre-condition: the UEFI must be in Setup Mode. To enter Setup Mode:
+#   1. Boot into UEFI firmware settings (F2/Del/Esc at POST)
+#   2. Navigate to Secure Boot → clear or delete all existing keys
+#   3. Save and reboot, then re-run:
+#      ./bootstrap/setup-user.sh <host> --tags secure_boot
+
+- name: "secure_boot: enroll keys into UEFI"
+  ansible.builtin.command: sbctl enroll-keys --microsoft
+  register: enroll_result
+  changed_when: true
+  failed_when: false
+
+- name: "secure_boot: fail with instructions if enrollment did not succeed"
+  ansible.builtin.fail:
+    msg: |
+      Secure Boot enrollment failed: {{ enroll_result.stderr | default(enroll_result.stdout) }}
+
+      The UEFI must be in Setup Mode. To enter Setup Mode:
+        1. Boot into UEFI firmware settings (F2/Del/Esc at POST)
+        2. Navigate to Secure Boot → clear or delete all existing keys
+        3. Save and reboot, then re-run:
+           ./bootstrap/setup-user.sh <host> --tags secure_boot
+  when: >-
+    enroll_result.rc != 0 and
+    'already' not in (enroll_result.stderr | lower) and
+    'already' not in (enroll_result.stdout | lower)

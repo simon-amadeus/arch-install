@@ -33,17 +33,24 @@
     mode: '0644'
   register: kernel_preset
 
-- name: "mkinitcpio: regenerate (UKI build)"
-  ansible.builtin.command: "mkinitcpio -P"
-  when: mkinitcpio_conf.changed or kernel_cmdline.changed or kernel_preset.changed
-  changed_when: true
-
-- name: "mkinitcpio: confirm UKI was written"
+- name: "mkinitcpio: check if UKI already exists"
   ansible.builtin.stat:
     path: "/boot/EFI/Linux/arch-{{ kernel }}.efi"
-  register: uki_stat
+  register: uki_pre
+
+- name: "mkinitcpio: regenerate (UKI build)"
+  ansible.builtin.command: "mkinitcpio -P"
+  when: >
+    mkinitcpio_conf.changed or kernel_cmdline.changed or
+    kernel_preset.changed or not uki_pre.stat.exists
+  changed_when: true
 
 - name: "mkinitcpio: assert UKI exists"
+  ansible.builtin.stat:
+    path: "/boot/EFI/Linux/arch-{{ kernel }}.efi"
+  register: uki_post
+
+- name: "mkinitcpio: verify UKI was produced"
   ansible.builtin.assert:
-    that: uki_stat.stat.exists
+    that: uki_post.stat.exists
     fail_msg: "UKI was not produced at /boot/EFI/Linux/arch-{{ kernel }}.efi"

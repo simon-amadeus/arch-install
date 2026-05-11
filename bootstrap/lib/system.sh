@@ -17,11 +17,11 @@ BASE_PACKAGES=(
 
 run_pacstrap() {
     log "pacstrap: refreshing keyring & mirrors"
-    pacman-key --init >/dev/null 2>&1 || true
+    pacman-key --init || warn "pacman-key --init failed (continuing)"
     pacman -Sy --noconfirm archlinux-keyring
 
-    log "selecting fastest German https mirrors"
-    reflector --country Germany --latest 20 --protocol https --sort rate \
+    log "selecting fastest ${CFG_REFLECTOR_COUNTRY} https mirrors"
+    reflector --country "${CFG_REFLECTOR_COUNTRY}" --latest 20 --protocol https --sort rate \
         --save /etc/pacman.d/mirrorlist
 
     log "running pacstrap (kernel=${CFG_KERNEL}, microcode=${CFG_MICROCODE})"
@@ -49,7 +49,6 @@ stage_ansible() {
     install -d -m 0700 "${MOUNT_ROOT}/root/install"
     cp -r "${repo_root}/ansible"  "${MOUNT_ROOT}/root/install/"
     cp -r "${repo_root}/hosts"    "${MOUNT_ROOT}/root/install/"
-    cp -r "${repo_root}/packages" "${MOUNT_ROOT}/root/install/" 2>/dev/null || true
 }
 
 copy_iwd_state() {

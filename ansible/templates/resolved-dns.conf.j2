@@ -1,8 +1,8 @@
 [Resolve]
 DNS={{ network.dns.primary | join(' ') }}
 FallbackDNS={{ network.dns.fallback | join(' ') }}
-DNSSEC={{ network.dnssec | default('allow-downgrade') }}
-DNSOverTLS={{ network.dns_over_tls | default('opportunistic') }}
+DNSSEC={{ network.dnssec | default('yes') }}
+DNSOverTLS={{ network.dns_over_tls | default('strict') }}
 Cache=yes
 LLMNR=no
 MulticastDNS=no

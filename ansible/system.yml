@@ -67,3 +67,13 @@
     - name: Enable essential services
       ansible.builtin.import_tasks: tasks/services.yml
       tags: [services]
+
+    - name: Btrfs snapshots (snapper + snap-pac)
+      ansible.builtin.import_tasks: tasks/snapshots.yml
+      tags: [snapshots]
+      when: features.snapshots | default(false)
+
+    - name: Secure Boot (sbctl keys + sign UKI)
+      ansible.builtin.import_tasks: tasks/secure_boot.yml
+      tags: [secure_boot]
+      when: features.secure_boot | default(false)

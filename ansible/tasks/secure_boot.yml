@@ -1,0 +1,24 @@
+---
+# Install sbctl, create Secure Boot keys, and sign the UKI. Runs in the chroot.
+# Key enrollment into UEFI firmware happens in phase 3 (secure_boot_enroll.yml)
+# after first boot, once the UEFI is in Setup Mode.
+
+- name: "secure_boot: install sbctl"
+  ansible.builtin.package:
+    name: sbctl
+    state: present
+
+- name: "secure_boot: check if keys already exist"
+  ansible.builtin.stat:
+    path: /usr/share/secureboot/keys/db/db.key
+  register: sb_keys_stat
+
+- name: "secure_boot: create Secure Boot keys"
+  ansible.builtin.command: sbctl create-keys
+  when: not sb_keys_stat.stat.exists
+  changed_when: true
+
+- name: "secure_boot: sign UKI and register for automatic re-signing"
+  ansible.builtin.command: "sbctl sign -s /boot/EFI/Linux/arch-{{ kernel }}.efi"
+  changed_when: true
+  # sbctl ships zz-sbctl.hook which re-runs sign-all after kernel/bootloader updates.

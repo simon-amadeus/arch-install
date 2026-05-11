@@ -1,0 +1,32 @@
+---
+# Automatic btrfs snapshots via snapper + snap-pac.
+# - snap-pac creates pre/post snapshots around every pacman transaction.
+# - snapper-timeline.timer creates periodic snapshots (hourly by default).
+# - snapper-cleanup.timer removes old snapshots based on configured retention.
+#
+# The @snapshots subvolume is already mounted at /.snapshots by bootstrap.
+
+- name: "snapshots: install snapper and snap-pac"
+  ansible.builtin.package:
+    name:
+      - snapper
+      - snap-pac
+    state: present
+
+- name: "snapshots: check if root config exists"
+  ansible.builtin.stat:
+    path: /etc/snapper/configs/root
+  register: snapper_root_config
+
+- name: "snapshots: create root snapper config"
+  ansible.builtin.command: snapper -c root create-config /
+  when: not snapper_root_config.stat.exists
+  changed_when: true
+
+- name: "snapshots: enable snapper timers"
+  ansible.builtin.command: "systemctl enable {{ item }}"
+  register: enable_result
+  changed_when: "'Created symlink' in enable_result.stderr or 'Created symlink' in enable_result.stdout"
+  loop:
+    - snapper-timeline.timer
+    - snapper-cleanup.timer

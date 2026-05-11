@@ -28,6 +28,7 @@ load_host_config() {
     CFG_MICROCODE=$(yq -r '.microcode' "$path")
 
     CFG_USERNAME=$(yq -r '.user.name' "$path")
+    CFG_REFLECTOR_COUNTRY=$(yq -r '.reflector_country // "Germany"' "$path")
 
     local missing=()
     for v in CFG_HOSTNAME CFG_KEYMAP CFG_TIMEZONE CFG_LOCALE \
