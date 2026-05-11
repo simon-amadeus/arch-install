@@ -4,9 +4,9 @@
     name: chezmoi
     state: present
 
-- name: "dotfiles: check if chezmoi source dir exists"
+- name: "dotfiles: check if chezmoi repo is cloned"
   ansible.builtin.stat:
-    path: "/home/{{ user.name }}/.local/share/chezmoi"
+    path: "/home/{{ user.name }}/.local/share/chezmoi/.git"
   register: chezmoi_src
 
 # Init only runs once (clones the source repo). Apply runs every time so
