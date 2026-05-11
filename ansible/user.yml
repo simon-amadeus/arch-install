@@ -44,6 +44,11 @@
       tags: [desktop]
       when: features.desktop | default('none') == 'sway'
 
+    - name: Autologin on tty1
+      ansible.builtin.import_tasks: tasks/autologin.yml
+      tags: [autologin]
+      when: features.desktop | default('none') != 'none'
+
     - name: Dotfiles (chezmoi)
       ansible.builtin.import_tasks: tasks/dotfiles.yml
       tags: [dotfiles]
