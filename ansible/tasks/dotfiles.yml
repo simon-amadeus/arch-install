@@ -1,78 +1,26 @@
 ---
-# Dotfiles are in stow topic-directory format (zsh/, sway/, …).
-# Each package dir contains files relative to ~, stow creates symlinks.
-
-- name: "dotfiles: install stow"
-  ansible.builtin.package:
-    name: stow
-    state: present
-
-# Remove artefacts from the previous chezmoi attempt: find the topic dirs
-# chezmoi misplaced into ~ and delete them, then nuke the source + cache.
-- name: "dotfiles: check for chezmoi source directory"
-  ansible.builtin.stat:
-    path: "/home/{{ user.name }}/.local/share/chezmoi"
-  register: chezmoi_src
-
-- name: "dotfiles: find packages misplaced by chezmoi"
-  ansible.builtin.find:
-    paths: "/home/{{ user.name }}/.local/share/chezmoi"
-    file_type: directory
-    depth: 1
-  register: chezmoi_pkgs
-  when: chezmoi_src.stat.exists
-
-- name: "dotfiles: remove chezmoi-misplaced dirs from home"
-  ansible.builtin.file:
-    path: "/home/{{ user.name }}/{{ item }}"
-    state: absent
-  loop: "{{ chezmoi_pkgs.files | default([]) | map(attribute='path') | map('basename') | reject('match', '^[.]') | list }}"
-  when: chezmoi_src.stat.exists
-
-- name: "dotfiles: remove chezmoi source directory"
-  ansible.builtin.file:
-    path: "/home/{{ user.name }}/.local/share/chezmoi"
-    state: absent
-  when: chezmoi_src.stat.exists
-
-- name: "dotfiles: remove chezmoi cache"
-  ansible.builtin.file:
-    path: "/home/{{ user.name }}/.cache/chezmoi"
-    state: absent
-
-# Clone and stow.
-- name: "dotfiles: clone dotfiles repo"
+- name: "dotfiles: clone bare repository"
   ansible.builtin.git:
     repo: "{{ user.dotfiles_repo }}"
-    dest: "/home/{{ user.name }}/dotfiles"
+    dest: "/home/{{ user.name }}/.dotfiles"
+    bare: true
     update: true
   become_user: "{{ user.name }}"
 
-- name: "dotfiles: find stow packages"
-  ansible.builtin.find:
-    paths: "/home/{{ user.name }}/dotfiles"
-    file_type: directory
-    depth: 1
-  register: stow_pkg_dirs
-
-# Two-step: delete all existing stow-managed symlinks first, then lay down
-# fresh ones. --restow processes packages sequentially and errors when it
-# finds a symlink it just created for package A while processing package B.
-# Splitting delete + stow avoids that entirely.
-- name: "dotfiles: destow all packages"
+- name: "dotfiles: checkout files into home directory"
   ansible.builtin.command:
-    argv: "{{ ['stow', '--delete', '--dir', '/home/' + user.name + '/dotfiles', '--target', '/home/' + user.name] + _pkgs }}"
+    cmd: >
+      git --git-dir=/home/{{ user.name }}/.dotfiles
+          --work-tree=/home/{{ user.name }}/.config
+          checkout -f
   become_user: "{{ user.name }}"
-  vars:
-    _pkgs: "{{ stow_pkg_dirs.files | map(attribute='path') | map('basename') | reject('match', '^[.]') | list }}"
-  when: _pkgs | length > 0
-  changed_when: false
-
-- name: "dotfiles: stow all packages"
-  ansible.builtin.command:
-    argv: "{{ ['stow', '--no-folding', '--dir', '/home/' + user.name + '/dotfiles', '--target', '/home/' + user.name] + _pkgs }}"
-  become_user: "{{ user.name }}"
-  vars:
-    _pkgs: "{{ stow_pkg_dirs.files | map(attribute='path') | map('basename') | reject('match', '^[.]') | list }}"
-  when: _pkgs | length > 0
   changed_when: true
+
+- name: "dotfiles: hide untracked files in git status"
+  ansible.builtin.command:
+    cmd: >
+      git --git-dir=/home/{{ user.name }}/.dotfiles
+          --work-tree=/home/{{ user.name }}/.config
+          config --local status.showUntrackedFiles no
+  become_user: "{{ user.name }}"
+  changed_when: false
