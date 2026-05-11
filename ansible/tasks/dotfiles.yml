@@ -9,12 +9,24 @@
     path: "/home/{{ user.name }}/.local/share/chezmoi"
   register: chezmoi_src
 
-- name: "dotfiles: init and apply {{ user.dotfiles_repo }}"
+# Init only runs once (clones the source repo). Apply runs every time so
+# a re-run after a partial failure still converges.
+- name: "dotfiles: init from {{ user.dotfiles_repo }}"
   ansible.builtin.command:
-    cmd: "chezmoi init --apply {{ user.dotfiles_repo }}"
+    cmd: "chezmoi init {{ user.dotfiles_repo }}"
   become_user: "{{ user.name }}"
   when: not chezmoi_src.stat.exists
   changed_when: true
+  environment:
+    HOME: "/home/{{ user.name }}"
+    XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
+    XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
+
+- name: "dotfiles: apply"
+  ansible.builtin.command:
+    cmd: chezmoi apply
+  become_user: "{{ user.name }}"
+  changed_when: false
   environment:
     HOME: "/home/{{ user.name }}"
     XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"

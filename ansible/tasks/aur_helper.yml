@@ -30,7 +30,7 @@
 
 - name: "aur: build paru-bin package"
   ansible.builtin.command:
-    cmd: makepkg --noconfirm --noprogressbar --skippgpcheck -d
+    cmd: makepkg --noconfirm --noprogressbar --skippgpcheck -df
     chdir: "/home/{{ user.name }}/.cache/aur/paru-bin"
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
