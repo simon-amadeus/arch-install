@@ -7,15 +7,25 @@
 - name: "dotfiles: check if chezmoi repo is cloned"
   ansible.builtin.stat:
     path: "/home/{{ user.name }}/.local/share/chezmoi/.git"
-  register: chezmoi_src
+  register: chezmoi_git
 
-# Init only runs once (clones the source repo). Apply runs every time so
-# a re-run after a partial failure still converges.
+- name: "dotfiles: read current remote URL"
+  ansible.builtin.command:
+    cmd: "git -C /home/{{ user.name }}/.local/share/chezmoi remote get-url origin"
+  register: chezmoi_remote
+  changed_when: false
+  failed_when: false
+  when: chezmoi_git.stat.exists
+
+# Re-init when the source dir is missing or the remote URL no longer matches.
+# This handles the case where dotfiles_repo was changed in the host config.
 - name: "dotfiles: init from {{ user.dotfiles_repo }}"
   ansible.builtin.command:
     cmd: "chezmoi init {{ user.dotfiles_repo }}"
   become_user: "{{ user.name }}"
-  when: not chezmoi_src.stat.exists
+  when: >
+    not chezmoi_git.stat.exists or
+    (chezmoi_remote.stdout | default('') | trim) != user.dotfiles_repo
   changed_when: true
   environment:
     HOME: "/home/{{ user.name }}"
@@ -26,8 +36,25 @@
   ansible.builtin.command:
     cmd: chezmoi apply
   become_user: "{{ user.name }}"
+  register: chezmoi_apply
   changed_when: false
   environment:
     HOME: "/home/{{ user.name }}"
     XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
     XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
+
+- name: "dotfiles: list managed files"
+  ansible.builtin.command:
+    cmd: chezmoi managed
+  become_user: "{{ user.name }}"
+  register: chezmoi_managed
+  changed_when: false
+  failed_when: false
+  environment:
+    HOME: "/home/{{ user.name }}"
+    XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
+    XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
+
+- name: "dotfiles: show managed files"
+  ansible.builtin.debug:
+    msg: "{{ chezmoi_managed.stdout_lines }}"
