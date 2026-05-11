@@ -4,6 +4,22 @@
     name: chezmoi
     state: present
 
+# Ensure XDG base dirs are owned by the user before chezmoi runs.
+# These can end up root-owned if any earlier task created them as root
+# (e.g. aur_helper creating ~/.cache/aur/ before this fix was in place).
+- name: "dotfiles: ensure XDG base dirs are owned by {{ user.name }}"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: '0700'
+  loop:
+    - "/home/{{ user.name }}/.cache"
+    - "/home/{{ user.name }}/.config"
+    - "/home/{{ user.name }}/.local"
+    - "/home/{{ user.name }}/.local/share"
+
 - name: "dotfiles: check if chezmoi repo is cloned"
   ansible.builtin.stat:
     path: "/home/{{ user.name }}/.local/share/chezmoi/.git"
@@ -18,7 +34,6 @@
   when: chezmoi_git.stat.exists
 
 # Re-init when the source dir is missing or the remote URL no longer matches.
-# This handles the case where dotfiles_repo was changed in the host config.
 - name: "dotfiles: init from {{ user.dotfiles_repo }}"
   ansible.builtin.command:
     cmd: "chezmoi init {{ user.dotfiles_repo }}"
@@ -34,27 +49,16 @@
 
 - name: "dotfiles: apply"
   ansible.builtin.command:
-    cmd: chezmoi apply
+    cmd: chezmoi apply --verbose
   become_user: "{{ user.name }}"
   register: chezmoi_apply
-  changed_when: false
+  changed_when: chezmoi_apply.stdout | length > 0
   environment:
     HOME: "/home/{{ user.name }}"
     XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
     XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
 
-- name: "dotfiles: list managed files"
-  ansible.builtin.command:
-    cmd: chezmoi managed
-  become_user: "{{ user.name }}"
-  register: chezmoi_managed
-  changed_when: false
-  failed_when: false
-  environment:
-    HOME: "/home/{{ user.name }}"
-    XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
-    XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
-
-- name: "dotfiles: show managed files"
+- name: "dotfiles: show apply output"
   ansible.builtin.debug:
-    msg: "{{ chezmoi_managed.stdout_lines }}"
+    msg: "{{ (chezmoi_apply.stdout_lines + chezmoi_apply.stderr_lines) | select() | list }}"
+  when: (chezmoi_apply.stdout_lines + chezmoi_apply.stderr_lines) | select() | list | length > 0

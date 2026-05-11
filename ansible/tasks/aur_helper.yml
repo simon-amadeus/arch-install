@@ -15,9 +15,8 @@
   ansible.builtin.file:
     path: "/home/{{ user.name }}/.cache/aur/paru-bin"
     state: directory
-    owner: "{{ user.name }}"
-    group: "{{ user.name }}"
     mode: '0755'
+  become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
 
 - name: "aur: clone paru-bin from AUR"
