@@ -65,6 +65,7 @@ run_ansible_in_chroot() {
     local host="$1"
     log "running ansible system playbook inside chroot"
     arch-chroot "$MOUNT_ROOT" \
+        env ANSIBLE_CONFIG=/root/install/ansible/ansible.cfg \
         ansible-playbook \
             -i /root/install/ansible/inventory.ini \
             -e "@/root/install/hosts/${host}.yml" \

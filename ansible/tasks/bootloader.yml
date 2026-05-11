@@ -23,6 +23,12 @@
       auto-entries yes
       auto-firmware yes
 
+- name: "bootloader: ensure /etc/pacman.d/hooks exists"
+  ansible.builtin.file:
+    path: /etc/pacman.d/hooks
+    state: directory
+    mode: '0755'
+
 - name: "bootloader: enable systemd-boot pacman hook for auto-updates"
   ansible.builtin.copy:
     dest: /etc/pacman.d/hooks/95-systemd-boot.hook
