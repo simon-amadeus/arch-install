@@ -13,6 +13,7 @@ BASE_PACKAGES=(
     iwd
     python ansible
     yq
+    rsync
 )
 
 run_pacstrap() {
