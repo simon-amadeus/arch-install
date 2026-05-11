@@ -4,8 +4,7 @@
     name: firewalld
     state: present
 
-- name: "firewall: enable and start firewalld"
-  ansible.builtin.systemd:
-    name: firewalld.service
-    enabled: true
-    state: started
+- name: "firewall: enable firewalld.service"
+  ansible.builtin.command: systemctl enable firewalld.service
+  register: enable_result
+  changed_when: "'Created symlink' in enable_result.stderr or 'Created symlink' in enable_result.stdout"

@@ -29,25 +29,10 @@
       tags: [audio]
       when: features.audio | default(false)
 
-    - name: Bluetooth
-      ansible.builtin.import_tasks: tasks/bluetooth.yml
-      tags: [bluetooth]
-      when: features.bluetooth | default(false)
-
-    - name: Firewall (firewalld)
-      ansible.builtin.import_tasks: tasks/firewall.yml
-      tags: [firewall]
-      when: features.firewalld | default(false)
-
     - name: Desktop (sway)
       ansible.builtin.import_tasks: tasks/desktop_sway.yml
       tags: [desktop]
       when: features.desktop | default('none') == 'sway'
-
-    - name: Autologin on tty1
-      ansible.builtin.import_tasks: tasks/autologin.yml
-      tags: [autologin]
-      when: features.desktop | default('none') != 'none'
 
     - name: Dotfiles (bare git)
       ansible.builtin.import_tasks: tasks/dotfiles.yml

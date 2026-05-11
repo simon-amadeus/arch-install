@@ -13,9 +13,5 @@
       [Service]
       ExecStart=
       ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin {{ user.name }} %I $TERM
-  register: autologin_override
-
-- name: "autologin: reload systemd to apply override"
-  ansible.builtin.systemd:
-    daemon_reload: true
-  when: autologin_override.changed
+# No daemon_reload: the chroot has no running PID 1. systemd picks up the
+# drop-in on first boot.

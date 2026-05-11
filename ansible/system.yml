@@ -68,6 +68,21 @@
       ansible.builtin.import_tasks: tasks/services.yml
       tags: [services]
 
+    - name: Bluetooth
+      ansible.builtin.import_tasks: tasks/bluetooth.yml
+      tags: [bluetooth]
+      when: features.bluetooth | default(false)
+
+    - name: Firewall (firewalld)
+      ansible.builtin.import_tasks: tasks/firewall.yml
+      tags: [firewall]
+      when: features.firewalld | default(false)
+
+    - name: Autologin on tty1
+      ansible.builtin.import_tasks: tasks/autologin.yml
+      tags: [autologin]
+      when: features.desktop | default('none') != 'none'
+
     - name: Btrfs snapshots (snapper + snap-pac)
       ansible.builtin.import_tasks: tasks/snapshots.yml
       tags: [snapshots]
