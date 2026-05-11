@@ -1,0 +1,11 @@
+---
+- name: "firewall: install firewalld"
+  ansible.builtin.package:
+    name: firewalld
+    state: present
+
+- name: "firewall: enable and start firewalld"
+  ansible.builtin.systemd:
+    name: firewalld.service
+    enabled: true
+    state: started

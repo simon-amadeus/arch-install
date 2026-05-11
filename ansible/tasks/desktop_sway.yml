@@ -1,0 +1,46 @@
+---
+- name: "desktop: install sway and wayland stack"
+  ansible.builtin.package:
+    name:
+      # Compositor
+      - sway
+      - swaylock
+      - swayidle
+      # Status bar
+      - waybar
+      - ttf-font-awesome        # waybar icons
+      # Launcher
+      - wofi
+      # Terminal
+      - foot
+      # Notifications
+      - mako
+      # Screenshots
+      - grim
+      - slurp
+      # Clipboard
+      - wl-clipboard
+      # XDG portals (screen sharing, file picker)
+      - xdg-desktop-portal-wlr
+      - xdg-desktop-portal-gtk
+      # User directories
+      - xdg-user-dirs
+      # Auth agent
+      - polkit
+      - polkit-gnome
+      # Fonts
+      - noto-fonts
+      - noto-fonts-emoji
+      # Hardware controls
+      - brightnessctl
+      - playerctl
+    state: present
+
+- name: "desktop: create XDG user directories for {{ user.name }}"
+  ansible.builtin.command: xdg-user-dirs-update
+  become_user: "{{ user.name }}"
+  changed_when: false
+  failed_when: false
+  environment:
+    HOME: "/home/{{ user.name }}"
+    XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"

@@ -1,0 +1,25 @@
+---
+# Installs paru (AUR helper) as the primary user.
+# Uses paru-bin from the AUR to avoid a full Rust toolchain compile.
+# makepkg refuses to run as root, so both clone and build run as user.name.
+
+- name: "aur: check if paru is installed"
+  ansible.builtin.stat:
+    path: /usr/bin/paru
+  register: paru_stat
+
+- name: "aur: clone paru-bin from AUR"
+  ansible.builtin.git:
+    repo: https://aur.archlinux.org/paru-bin.git
+    dest: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    force: true
+  become_user: "{{ user.name }}"
+  when: not paru_stat.stat.exists
+
+- name: "aur: build and install paru-bin"
+  ansible.builtin.command:
+    cmd: makepkg -si --noconfirm
+    chdir: "/home/{{ user.name }}/.cache/aur/paru-bin"
+  become_user: "{{ user.name }}"
+  when: not paru_stat.stat.exists
+  changed_when: true

@@ -1,0 +1,50 @@
+---
+# User-space setup. Runs on the booted system as the primary user (not in a chroot).
+#
+# Usage:
+#   ansible-playbook -K -e @hosts/<host>.yml ansible/user.yml
+#
+# Requires the user account to exist with sudo access (phase 2 sets this up).
+# -K prompts for the sudo password once.
+
+- name: User environment
+  hosts: local
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Sanity-check required vars
+      ansible.builtin.assert:
+        that:
+          - user.name is defined
+          - features is defined
+        fail_msg: "host config is missing required keys"
+
+    - name: AUR helper (paru)
+      ansible.builtin.import_tasks: tasks/aur_helper.yml
+      tags: [aur]
+
+    - name: Audio (pipewire)
+      ansible.builtin.import_tasks: tasks/audio.yml
+      tags: [audio]
+      when: features.audio | default(false)
+
+    - name: Bluetooth
+      ansible.builtin.import_tasks: tasks/bluetooth.yml
+      tags: [bluetooth]
+      when: features.bluetooth | default(false)
+
+    - name: Firewall (firewalld)
+      ansible.builtin.import_tasks: tasks/firewall.yml
+      tags: [firewall]
+      when: features.firewalld | default(false)
+
+    - name: Desktop (sway)
+      ansible.builtin.import_tasks: tasks/desktop_sway.yml
+      tags: [desktop]
+      when: features.desktop | default('none') == 'sway'
+
+    - name: Dotfiles (chezmoi)
+      ansible.builtin.import_tasks: tasks/dotfiles.yml
+      tags: [dotfiles]
+      when: user.dotfiles_repo is defined

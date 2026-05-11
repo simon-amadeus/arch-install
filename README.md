@@ -10,7 +10,7 @@ bash bootstrap for the destructive parts, and Ansible for everything else.
 | 0. ISO | Build a custom live ISO with this repo + ansible baked in | [iso/build.sh](iso/build.sh) |
 | 1. Bootstrap | Partition, LUKS, btrfs subvolumes, pacstrap base | [bootstrap/install.sh](bootstrap/install.sh) |
 | 2. System | Locale, time, hostname, network, UKI, systemd-boot, user | [ansible/system.yml](ansible/system.yml) |
-| 3. User *(not yet implemented)* | Dotfiles, AUR helper, GUI apps, desktop env | `ansible/user.yml` (TODO) |
+| 3. User | AUR helper, audio, bluetooth, firewall, sway, dotfiles | [ansible/user.yml](ansible/user.yml) |
 
 ## Disk layout
 
@@ -65,6 +65,19 @@ That runs phase 1 (bootstrap) → phase 2 (Ansible inside the chroot) →
 prompts for root + user passwords. After `reboot` you have a bootable
 encrypted system with the user account ready to log in.
 
+### User environment (phase 3)
+
+After first boot, connect to wifi and run:
+
+```bash
+~/arch-install/bootstrap/setup-user.sh xps
+```
+
+This installs paru, pipewire, bluetooth, firewalld, the sway desktop stack,
+and applies your dotfiles via chezmoi. Run with `--tags <tag>` to apply a
+single step — valid tags: `aur`, `audio`, `bluetooth`, `firewall`, `desktop`,
+`dotfiles`.
+
 ### Test in qemu before flashing USB
 
 ```bash
@@ -91,13 +104,10 @@ arch-chroot /mnt ansible-playbook \
 
 ## Status
 
-Skeleton. The phase 1 + minimal phase 2 path exists. Still to do:
+Phase 1 + 2 + 3 implemented. Still to do:
 
-- [ ] phase 3 (user.yml): dotfiles via chezmoi, AUR helper, GUI apps
-- [ ] desktop role (sway)
-- [ ] optional service roles (audio, bluetooth, printing, firewalld)
 - [ ] snapper config + pre-pacman snapshots
-- [ ] TPM2 auto-unlock via `systemd-cryptenroll`
+- [ ] TPM2 auto-unlock via `systemd-cryptenroll` (`tpm2_unlock: true` in host config)
 - [ ] qemu-based smoke test in `tests/`
 
 The original installer is preserved in [legacy/](legacy/) for reference

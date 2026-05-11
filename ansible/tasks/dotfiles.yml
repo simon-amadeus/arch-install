@@ -1,0 +1,21 @@
+---
+- name: "dotfiles: install chezmoi"
+  ansible.builtin.package:
+    name: chezmoi
+    state: present
+
+- name: "dotfiles: check if chezmoi source dir exists"
+  ansible.builtin.stat:
+    path: "/home/{{ user.name }}/.local/share/chezmoi"
+  register: chezmoi_src
+
+- name: "dotfiles: init and apply {{ user.dotfiles_repo }}"
+  ansible.builtin.command:
+    cmd: "chezmoi init --apply {{ user.dotfiles_repo }}"
+  become_user: "{{ user.name }}"
+  when: not chezmoi_src.stat.exists
+  changed_when: true
+  environment:
+    HOME: "/home/{{ user.name }}"
+    XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
+    XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
