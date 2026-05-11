@@ -49,7 +49,7 @@
       tags: [autologin]
       when: features.desktop | default('none') != 'none'
 
-    - name: Dotfiles (chezmoi)
+    - name: Dotfiles (stow)
       ansible.builtin.import_tasks: tasks/dotfiles.yml
       tags: [dotfiles]
       when: user.dotfiles_repo is defined

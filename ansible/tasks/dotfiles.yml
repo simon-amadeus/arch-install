@@ -1,64 +1,65 @@
 ---
-- name: "dotfiles: install chezmoi"
+# Dotfiles are in stow topic-directory format (zsh/, sway/, …).
+# Each package dir contains files relative to ~, stow creates symlinks.
+
+- name: "dotfiles: install stow"
   ansible.builtin.package:
-    name: chezmoi
+    name: stow
     state: present
 
-# Ensure XDG base dirs are owned by the user before chezmoi runs.
-# These can end up root-owned if any earlier task created them as root
-# (e.g. aur_helper creating ~/.cache/aur/ before this fix was in place).
-- name: "dotfiles: ensure XDG base dirs are owned by {{ user.name }}"
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ user.name }}"
-    group: "{{ user.name }}"
-    mode: '0700'
-  loop:
-    - "/home/{{ user.name }}/.cache"
-    - "/home/{{ user.name }}/.config"
-    - "/home/{{ user.name }}/.local"
-    - "/home/{{ user.name }}/.local/share"
-
-- name: "dotfiles: check if chezmoi repo is cloned"
+# Remove artefacts from the previous chezmoi attempt: find the topic dirs
+# chezmoi misplaced into ~ and delete them, then nuke the source + cache.
+- name: "dotfiles: check for chezmoi source directory"
   ansible.builtin.stat:
-    path: "/home/{{ user.name }}/.local/share/chezmoi/.git"
-  register: chezmoi_git
+    path: "/home/{{ user.name }}/.local/share/chezmoi"
+  register: chezmoi_src
 
-- name: "dotfiles: read current remote URL"
-  ansible.builtin.command:
-    cmd: "git -C /home/{{ user.name }}/.local/share/chezmoi remote get-url origin"
-  register: chezmoi_remote
-  changed_when: false
-  failed_when: false
-  when: chezmoi_git.stat.exists
+- name: "dotfiles: find packages misplaced by chezmoi"
+  ansible.builtin.find:
+    paths: "/home/{{ user.name }}/.local/share/chezmoi"
+    file_type: directory
+    depth: 1
+  register: chezmoi_pkgs
+  when: chezmoi_src.stat.exists
 
-# Re-init when the source dir is missing or the remote URL no longer matches.
-- name: "dotfiles: init from {{ user.dotfiles_repo }}"
-  ansible.builtin.command:
-    cmd: "chezmoi init {{ user.dotfiles_repo }}"
+- name: "dotfiles: remove chezmoi-misplaced dirs from home"
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/{{ item }}"
+    state: absent
+  loop: "{{ chezmoi_pkgs.files | default([]) | map(attribute='path') | map('basename') | reject('match', '^[.]') | list }}"
+  when: chezmoi_src.stat.exists
+
+- name: "dotfiles: remove chezmoi source directory"
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.local/share/chezmoi"
+    state: absent
+  when: chezmoi_src.stat.exists
+
+- name: "dotfiles: remove chezmoi cache"
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.cache/chezmoi"
+    state: absent
+
+# Clone and stow.
+- name: "dotfiles: clone dotfiles repo"
+  ansible.builtin.git:
+    repo: "{{ user.dotfiles_repo }}"
+    dest: "/home/{{ user.name }}/dotfiles"
+    update: true
   become_user: "{{ user.name }}"
-  when: >
-    not chezmoi_git.stat.exists or
-    (chezmoi_remote.stdout | default('') | trim) != user.dotfiles_repo
+
+- name: "dotfiles: find stow packages"
+  ansible.builtin.find:
+    paths: "/home/{{ user.name }}/dotfiles"
+    file_type: directory
+    depth: 1
+  register: stow_pkg_dirs
+
+- name: "dotfiles: stow all packages"
+  ansible.builtin.command:
+    argv: "{{ ['stow', '--restow', '--no-folding', '--dir', '/home/' + user.name + '/dotfiles', '--target', '/home/' + user.name] + (stow_pkg_dirs.files | map(attribute='path') | map('basename') | reject('match', '^[.]') | list) }}"
+  become_user: "{{ user.name }}"
+  vars:
+    _pkgs: "{{ stow_pkg_dirs.files | map(attribute='path') | map('basename') | reject('match', '^[.]') | list }}"
+  when: _pkgs | length > 0
   changed_when: true
-  environment:
-    HOME: "/home/{{ user.name }}"
-    XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
-    XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
-
-- name: "dotfiles: apply"
-  ansible.builtin.command:
-    cmd: chezmoi apply --verbose
-  become_user: "{{ user.name }}"
-  register: chezmoi_apply
-  changed_when: chezmoi_apply.stdout | length > 0
-  environment:
-    HOME: "/home/{{ user.name }}"
-    XDG_DATA_HOME: "/home/{{ user.name }}/.local/share"
-    XDG_CONFIG_HOME: "/home/{{ user.name }}/.config"
-
-- name: "dotfiles: show apply output"
-  ansible.builtin.debug:
-    msg: "{{ (chezmoi_apply.stdout_lines + chezmoi_apply.stderr_lines) | select() | list }}"
-  when: (chezmoi_apply.stdout_lines + chezmoi_apply.stderr_lines) | select() | list | length > 0
