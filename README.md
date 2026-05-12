@@ -126,7 +126,7 @@ re-run only the Ansible playbook without touching the disk:
 ```
 
 Valid phase 2 tags: `locale`, `time`, `hostname`, `network`, `mkinitcpio`,
-`bootloader`, `users`, `services`, `bluetooth`, `firewall`, `autologin`,
+`bootloader`, `users`, `cli`, `services`, `bluetooth`, `firewall`, `autologin`,
 `snapshots`.
 
-Valid phase 3 tags: `cli`, `aur`, `audio`, `desktop`, `dotfiles`, `secure_boot`.
+Valid phase 3 tags: `aur`, `audio`, `desktop`, `dotfiles`, `secure_boot`.

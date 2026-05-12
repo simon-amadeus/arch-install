@@ -64,6 +64,10 @@
       ansible.builtin.import_tasks: tasks/users.yml
       tags: [users]
 
+    - name: CLI tools (bat, lsd, helix, starship, …)
+      ansible.builtin.import_tasks: tasks/cli_tools.yml
+      tags: [cli]
+
     - name: Enable essential services
       ansible.builtin.import_tasks: tasks/services.yml
       tags: [services]
