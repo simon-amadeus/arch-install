@@ -11,8 +11,9 @@
       - ttf-font-awesome        # waybar icons
       # Launcher
       - wofi
-      # Terminal
-      - alacritty
+      # Terminals
+      - foot                 # sway default ($mod+Return) — works with no config
+      - alacritty            # user-configured terminal (dotfiles)
       # Notifications
       - mako
       # Screenshots
