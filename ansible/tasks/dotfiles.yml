@@ -26,3 +26,19 @@
           config --local status.showUntrackedFiles no
   become_user: "{{ user.name }}"
   changed_when: false
+
+- name: "dotfiles: create systemd user timers.target.wants directory"
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.config/systemd/user/timers.target.wants"
+    state: directory
+    mode: '0755'
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+
+- name: "dotfiles: enable sync-pkglist timer"
+  ansible.builtin.file:
+    src: "/home/{{ user.name }}/.config/systemd/user/sync-pkglist.timer"
+    dest: "/home/{{ user.name }}/.config/systemd/user/timers.target.wants/sync-pkglist.timer"
+    state: link
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"

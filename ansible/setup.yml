@@ -34,6 +34,11 @@
       tags: [desktop]
       when: features.desktop | default('none') == 'sway'
 
+    - name: USB automount (udiskie)
+      ansible.builtin.import_tasks: tasks/usb_automount.yml
+      tags: [usb_automount]
+      when: features.usb_automount | default(false)
+
     - name: Secure Boot (sbctl keys + sign UKI)
       ansible.builtin.import_tasks: tasks/secure_boot.yml
       tags: [secure_boot]

@@ -57,17 +57,6 @@
           xkb_layout {{ xkb_layout }}
       }
 
-# Written to /etc/profile.d/ so it's sourced by zsh on Arch via
-# /etc/zsh/zprofile → /etc/profile → profile.d/. Does not touch user dotfiles.
-- name: "desktop: write sway autostart to profile.d"
-  ansible.builtin.copy:
-    dest: /etc/profile.d/sway-autostart.sh
-    mode: '0644'
-    content: |
-      if [ -z "${WAYLAND_DISPLAY}" ] && [ "${XDG_VTNR:-0}" = "1" ]; then
-        exec sway
-      fi
-
 - name: "desktop: create XDG user directories for {{ user.name }}"
   ansible.builtin.command: xdg-user-dirs-update
   become_user: "{{ user.name }}"
