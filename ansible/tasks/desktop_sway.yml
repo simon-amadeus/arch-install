@@ -38,6 +38,25 @@
       - playerctl
     state: present
 
+# Drop-in keyboard layout for sway. The default /etc/sway/config (shipped by
+# the Arch package) ends with `include /etc/sway/config.d/*`, so this applies
+# before dotfiles are deployed. Once the user's ~/.config/sway/config exists
+# (from dotfiles), it overrides /etc/sway/config entirely and takes over.
+- name: "desktop: create /etc/sway/config.d directory"
+  ansible.builtin.file:
+    path: /etc/sway/config.d
+    state: directory
+    mode: '0755'
+
+- name: "desktop: write keyboard layout drop-in for sway"
+  ansible.builtin.copy:
+    dest: /etc/sway/config.d/input.conf
+    mode: '0644'
+    content: |
+      input type:keyboard {
+          xkb_layout {{ xkb_layout }}
+      }
+
 # Written to /etc/profile.d/ so it's sourced by zsh on Arch via
 # /etc/zsh/zprofile → /etc/profile → profile.d/. Does not touch user dotfiles.
 - name: "desktop: write sway autostart to profile.d"

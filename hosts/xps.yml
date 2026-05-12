@@ -7,7 +7,8 @@ hostname: xps
 reflector_country: Germany
 
 # Locale & console
-keymap: de-latin1
+keymap: de-latin1          # Linux virtual console (kbd keymap name)
+xkb_layout: de             # Wayland/XKB layout — separate system, different names
 console_font: ter-132b
 timezone: Europe/Berlin
 locale: en_US.UTF-8
