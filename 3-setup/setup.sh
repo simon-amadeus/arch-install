@@ -25,7 +25,6 @@ echo "=== setup — host: ${host} ==="
 
 ANSIBLE_CONFIG="${REPO_ROOT}/ansible/ansible.cfg" \
 ansible-playbook \
-    -K \
     -i "${REPO_ROOT}/ansible/inventory.ini" \
     -e "@${host_config}" \
     "${REPO_ROOT}/ansible/setup.yml" \

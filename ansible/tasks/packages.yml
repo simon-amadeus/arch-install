@@ -52,7 +52,7 @@
 - name: "packages: install AUR packages via paru"
   ansible.builtin.command:
     argv: "{{ ['paru', '--noconfirm', '-S', '--needed', '--sudoflags', '-S'] + aur_packages }}"
-    stdin: "{{ ansible_become_password }}\n"
+    stdin: "{{ sudo_password }}\n"
   become_user: "{{ user.name }}"
   no_log: true
   when: aur_packages is defined and aur_packages | length > 0
