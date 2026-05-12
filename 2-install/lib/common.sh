@@ -16,14 +16,15 @@ die()  { printf '[%s] FATAL: %s\n' "$(_ts)" "$*" | tee -a "$LOG_FILE" >&2; exit 
 on_err() {
     local exit_code=$?
     local line=${1:-?}
-    warn "command failed (exit ${exit_code}) at line ${line}: ${BASH_COMMAND}"
+    warn "command failed (exit ${exit_code}) at line ${line}${BASH_COMMAND:+: ${BASH_COMMAND}}"
     warn "see ${LOG_FILE} for full output"
     exit "$exit_code"
 }
 
 confirm() {
     local prompt="$1" answer
-    read -r -p "${prompt} [type YES to proceed]: " answer
+    printf '%s [type YES to proceed]: ' "${prompt}"
+    read -r answer
     [[ "$answer" == "YES" ]] || die "aborted by user"
 }
 

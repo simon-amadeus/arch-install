@@ -10,7 +10,7 @@
 
 set -Eeuo pipefail
 
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REPO_ROOT="$(cd "${HERE}/.." && pwd)"
 
 # shellcheck source=lib/common.sh
