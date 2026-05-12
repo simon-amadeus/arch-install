@@ -4,6 +4,7 @@
     name:
       # Compositor
       - sway
+      - swaybg
       - swaylock
       - swayidle
       # Status bar
@@ -34,8 +35,11 @@
       - noto-fonts-emoji
       - ttf-sourcecodepro-nerd  # terminal font with Nerd Font icons (lsd, starship)
       # Hardware controls
+      - blueman               # Bluetooth manager (GTK)
       - brightnessctl
+      - kanshi                # Output configuration (external monitor support)
       - playerctl
+      - wlsunset
     state: present
 
 # Drop-in keyboard layout for sway. The default /etc/sway/config (shipped by

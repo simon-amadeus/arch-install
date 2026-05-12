@@ -5,13 +5,17 @@
 - name: "cli_tools: install modern CLI utilities"
   ansible.builtin.package:
     name:
-      - helix              # editor (binary: hx)
-      - starship           # cross-shell prompt
       - bat                # cat with syntax highlighting
-      - lsd                # ls with icons (needs a Nerd Font in the terminal)
       - bottom             # htop replacement (binary: btm)
       - duf                # df replacement
       - dust               # du replacement
+      - fd                 # find replacement
+      - helix              # editor (binary: hx)
+      - jq                 # JSON processor
+      - lsd                # ls with icons (needs a Nerd Font in the terminal)
+      - openssh            # ssh client and server
+      - ripgrep            # grep replacement
+      - starship           # cross-shell prompt
       - zsh-autosuggestions    # fish-style inline suggestions
       - zsh-syntax-highlighting  # real-time command highlighting
     state: present

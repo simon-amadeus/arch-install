@@ -45,7 +45,7 @@ user:
 features:
   audio: true              # pipewire stack
   bluetooth: true
-  printing: false
+  printing: true
   firewalld: true
   usb_automount: true
   desktop: sway            # one of: none, minimal, sway
