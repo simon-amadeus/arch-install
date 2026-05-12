@@ -2,7 +2,7 @@
 # User-space setup. Runs on the booted system as the primary user (not in a chroot).
 #
 # Usage:
-#   ansible-playbook -K -e @hosts/<host>.yml ansible/user.yml
+#   ansible-playbook -K -e @hosts/<host>.yml ansible/setup.yml
 #
 # Requires the user account to exist with sudo access (phase 2 sets this up).
 # -K prompts for the sudo password once.

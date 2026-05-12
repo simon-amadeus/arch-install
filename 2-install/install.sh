@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Arch Linux installer — bootstrap phase.
+# Arch Linux installer — phase 2.
 #
 # Runs from the live ISO. Prepares disk, installs the base system, then hands
 # off to Ansible inside the chroot for everything else.
 #
-# Usage:  ./bootstrap/install.sh <hostname>
-# Example: ./bootstrap/install.sh xps   (reads hosts/xps.yml)
+# Usage:  ./2-install/install.sh <hostname>
+# Example: ./2-install/install.sh xps   (reads hosts/xps.yml)
 
 set -Eeuo pipefail
 

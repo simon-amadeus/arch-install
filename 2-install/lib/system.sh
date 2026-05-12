@@ -69,7 +69,7 @@ run_ansible_in_chroot() {
         ansible-playbook \
             -i /root/install/ansible/inventory.ini \
             -e "@/root/install/hosts/${host}.yml" \
-            /root/install/ansible/system.yml
+            /root/install/ansible/install.yml
 }
 
 setup_resolv_symlink() {

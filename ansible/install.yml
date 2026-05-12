@@ -1,10 +1,10 @@
 ---
-# System-layer configuration. Runs inside arch-chroot from bootstrap.
+# System-layer configuration — phase 2. Runs inside arch-chroot.
 #
 # Idempotent — every task is named so failures point at exactly which step
 # died. Re-running after a fix only re-executes failed/changed tasks.
 #
-# Variables come from -e @hosts/<host>.yml passed by bootstrap.
+# Variables come from -e @hosts/<host>.yml passed by 2-install/install.sh.
 
 - name: System configuration
   hosts: local

@@ -5,8 +5,8 @@
 # successfully. Syncs the latest ansible/ and hosts/ into the chroot then
 # reruns the playbook — no reboot, no repartitioning.
 #
-# Usage: ./bootstrap/rerun-ansible.sh <hostname>
-# Example: ./bootstrap/rerun-ansible.sh xps
+# Usage: ./2-install/recover.sh <hostname>
+# Example: ./2-install/recover.sh xps
 
 set -Eeuo pipefail
 
@@ -41,4 +41,4 @@ arch-chroot "$MOUNT_ROOT" \
     ansible-playbook \
         -i /root/install/ansible/inventory.ini \
         -e "@/root/install/hosts/${host}.yml" \
-        /root/install/ansible/system.yml
+        /root/install/ansible/install.yml

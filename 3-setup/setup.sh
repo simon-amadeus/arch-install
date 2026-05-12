@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# Run the user-space Ansible playbook on an installed, booted system.
+# User environment setup. Runs on the booted system as the primary user.
 #
-# Run this after first boot, logged in as the primary user or as root.
-# It will prompt once for the sudo password (-K).
+# Run after first boot, connected to wifi. Prompts once for sudo password (-K).
 #
-# Usage: ./bootstrap/setup-user.sh <hostname>
-# Example: ./bootstrap/setup-user.sh xps
+# Usage: ./3-setup/setup.sh <hostname>
+# Example: ./3-setup/setup.sh xps
 
 set -Eeuo pipefail
 
@@ -22,12 +21,12 @@ host_config="${REPO_ROOT}/hosts/${host}.yml"
 command -v ansible-playbook >/dev/null \
     || { echo "error: ansible-playbook not found — is ansible installed?"; exit 1; }
 
-echo "=== user setup — host: ${host} ==="
+echo "=== setup — host: ${host} ==="
 
 ANSIBLE_CONFIG="${REPO_ROOT}/ansible/ansible.cfg" \
 ansible-playbook \
     -K \
     -i "${REPO_ROOT}/ansible/inventory.ini" \
     -e "@${host_config}" \
-    "${REPO_ROOT}/ansible/user.yml" \
+    "${REPO_ROOT}/ansible/setup.yml" \
     "$@"
