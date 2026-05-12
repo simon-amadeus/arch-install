@@ -29,11 +29,13 @@ mountpoint -q "${MOUNT_ROOT}" \
 [[ -d "${MOUNT_ROOT}/usr/bin" ]] \
     || die "${MOUNT_ROOT}/usr/bin missing — pacstrap has not completed"
 
-log "syncing ansible + host config into chroot"
+log "syncing repo into chroot"
 install -d -m 0700 "${MOUNT_ROOT}/root/install"
-rm -rf "${MOUNT_ROOT}/root/install/ansible" "${MOUNT_ROOT}/root/install/hosts"
-cp -r "${REPO_ROOT}/ansible" "${MOUNT_ROOT}/root/install/"
-cp -r "${REPO_ROOT}/hosts"   "${MOUNT_ROOT}/root/install/"
+for d in ansible hosts 2-install 3-setup; do
+    rm -rf "${MOUNT_ROOT}/root/install/${d}"
+    [[ -d "${REPO_ROOT}/${d}" ]] && cp -r "${REPO_ROOT}/${d}" "${MOUNT_ROOT}/root/install/"
+done
+[[ -f "${REPO_ROOT}/README.md" ]] && cp "${REPO_ROOT}/README.md" "${MOUNT_ROOT}/root/install/" || true
 
 log "running ansible playbook inside chroot"
 arch-chroot "$MOUNT_ROOT" \

@@ -64,9 +64,18 @@
       ansible.builtin.import_tasks: tasks/users.yml
       tags: [users]
 
+    - name: Stage install scripts in user home
+      ansible.builtin.import_tasks: tasks/stage_scripts.yml
+      tags: [stage]
+
     - name: CLI tools (bat, lsd, helix, starship, …)
       ansible.builtin.import_tasks: tasks/cli_tools.yml
       tags: [cli]
+
+    - name: Default zsh config (overwritten by dotfiles in setup phase)
+      ansible.builtin.import_tasks: tasks/zsh_defaults.yml
+      tags: [zsh]
+      when: user.shell | default('') == '/bin/zsh'
 
     - name: Enable essential services
       ansible.builtin.import_tasks: tasks/services.yml

@@ -45,11 +45,16 @@ write_fstab() {
 
 stage_ansible() {
     local repo_root="$1"
-    log "staging ansible playbooks + host config into ${MOUNT_ROOT}/root/install"
+    log "staging repo into ${MOUNT_ROOT}/root/install"
 
     install -d -m 0700 "${MOUNT_ROOT}/root/install"
-    cp -r "${repo_root}/ansible"  "${MOUNT_ROOT}/root/install/"
-    cp -r "${repo_root}/hosts"    "${MOUNT_ROOT}/root/install/"
+    # Copy all dirs needed by both the Ansible run (ansible/, hosts/) and
+    # post-boot setup (3-setup/setup.sh references ansible/ and hosts/ via
+    # REPO_ROOT). 2-install/ is included for reference. 1-iso/ is not needed.
+    for d in ansible hosts 2-install 3-setup; do
+        [[ -d "${repo_root}/${d}" ]] && cp -r "${repo_root}/${d}" "${MOUNT_ROOT}/root/install/"
+    done
+    [[ -f "${repo_root}/README.md" ]] && cp "${repo_root}/README.md" "${MOUNT_ROOT}/root/install/" || true
 }
 
 copy_iwd_state() {
@@ -81,9 +86,9 @@ setup_resolv_symlink() {
 }
 
 set_passwords_in_chroot() {
-    log "setting root password (interactive)"
+    log "[1/2] set ROOT password — type twice:"
     arch-chroot "$MOUNT_ROOT" passwd
 
-    log "setting password for ${CFG_USERNAME} (interactive)"
+    log "[2/2] set password for user '${CFG_USERNAME}' — type twice:"
     arch-chroot "$MOUNT_ROOT" passwd "$CFG_USERNAME"
 }
