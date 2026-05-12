@@ -1,0 +1,60 @@
+---
+# Install user packages from dotfiles package lists.
+# Expects two plain-text files under ~/.config/pkglist/ (written by the
+# sync-pkglist timer that dotfiles.yml enables):
+#   pacman.txt  — official-repo packages (one per line, # = comment)
+#   aur.txt     — AUR packages           (one per line, # = comment)
+# Both files are optional — a missing file is silently skipped.
+
+- name: "packages: read official package list"
+  ansible.builtin.slurp:
+    src: "/home/{{ user.name }}/.config/pkglist/pacman.txt"
+  register: pkg_pacman_raw
+  ignore_errors: true
+
+- name: "packages: set pacman package list fact"
+  ansible.builtin.set_fact:
+    pacman_packages: >-
+      {{
+        pkg_pacman_raw['content']
+        | b64decode
+        | splitlines
+        | map('trim')
+        | select
+        | reject('match', '^#')
+        | list
+      }}
+  when: pkg_pacman_raw is not failed
+
+- name: "packages: install official packages"
+  community.general.pacman:
+    name: "{{ pacman_packages }}"
+    state: present
+  when: pacman_packages is defined and pacman_packages | length > 0
+
+- name: "packages: read AUR package list"
+  ansible.builtin.slurp:
+    src: "/home/{{ user.name }}/.config/pkglist/aur.txt"
+  register: pkg_aur_raw
+  ignore_errors: true
+
+- name: "packages: set AUR package list fact"
+  ansible.builtin.set_fact:
+    aur_packages: >-
+      {{
+        pkg_aur_raw['content']
+        | b64decode
+        | splitlines
+        | map('trim')
+        | select
+        | reject('match', '^#')
+        | list
+      }}
+  when: pkg_aur_raw is not failed
+
+- name: "packages: install AUR packages via paru"
+  ansible.builtin.command:
+    argv: "{{ ['paru', '--noconfirm', '-S', '--needed'] + aur_packages }}"
+  become_user: "{{ user.name }}"
+  when: aur_packages is defined and aur_packages | length > 0
+  changed_when: true

@@ -93,7 +93,7 @@ After first boot, connect to wifi and run:
 Installs CLI tools, paru, the pipewire stack, the sway desktop, and
 optionally checks out your dotfiles (bare git repo, work-tree `~`).
 Use `--tags <tag>` to run a single step — valid tags:
-`cli`, `aur`, `audio`, `desktop`, `dotfiles`, `secure_boot`.
+`cli`, `aur`, `audio`, `desktop`, `dotfiles`, `packages`, `secure_boot`.
 
 ### Secure Boot
 
@@ -129,4 +129,4 @@ Valid phase 2 tags: `locale`, `time`, `hostname`, `network`, `mkinitcpio`,
 `bootloader`, `users`, `cli`, `services`, `bluetooth`, `firewall`, `autologin`,
 `snapshots`.
 
-Valid phase 3 tags: `aur`, `audio`, `desktop`, `dotfiles`, `secure_boot`.
+Valid phase 3 tags: `aur`, `audio`, `desktop`, `dotfiles`, `packages`, `secure_boot`.

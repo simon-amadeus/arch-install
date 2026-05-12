@@ -53,3 +53,8 @@
       ansible.builtin.import_tasks: tasks/dotfiles.yml
       tags: [dotfiles]
       when: user.dotfiles_repo is defined and features.dotfiles | default(false)
+
+    - name: User packages (from dotfiles package lists)
+      ansible.builtin.import_tasks: tasks/packages.yml
+      tags: [packages]
+      when: features.packages | default(false)

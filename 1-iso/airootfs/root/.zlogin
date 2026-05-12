@@ -8,10 +8,10 @@ cat <<'BANNER'
   ║       iwctl                                                  ║
   ║                                                              ║
   ║  2. Run the installer:                                       ║
-  ║       ~/arch-install/2-install/install.sh xps               ║
+  ║       ~/arch-install/2-install/install.sh xps                ║
   ║                                                              ║
   ║  3. After reboot — finish user environment:                  ║
-  ║       ~/arch-install/3-setup/setup.sh xps                   ║
+  ║       ~/arch-install/3-setup/setup.sh xps                    ║
   ╚══════════════════════════════════════════════════════════════╝
 
 BANNER

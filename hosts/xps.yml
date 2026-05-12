@@ -53,6 +53,7 @@ features:
   secure_boot: false       # set true once UEFI is in Setup Mode for enrollment
   tpm2_unlock: false       # enroll after secure_boot is established
   dotfiles: true           # set true after dotfiles repo is reviewed and restructured
+  packages: true           # install user packages from the dotfiles repo's package lists
 
 # Network configuration applied to the installed system
 network:
