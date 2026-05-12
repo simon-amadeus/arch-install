@@ -91,6 +91,11 @@
       tags: [firewall]
       when: features.firewalld | default(false)
 
+    - name: Printing (CUPS + Avahi)
+      ansible.builtin.import_tasks: tasks/printing.yml
+      tags: [printing]
+      when: features.printing | default(false)
+
     - name: Autologin on tty1
       ansible.builtin.import_tasks: tasks/autologin.yml
       tags: [autologin]

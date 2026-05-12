@@ -1,0 +1,24 @@
+---
+- name: "printing: install CUPS and Avahi"
+  ansible.builtin.package:
+    name:
+      - cups
+      - avahi
+      - nss-mdns
+    state: present
+
+- name: "printing: enable mDNS in nsswitch.conf for printer discovery"
+  ansible.builtin.lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: '^hosts:'
+    line: 'hosts: mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns'
+
+- name: "printing: enable cups.socket"
+  ansible.builtin.command: systemctl enable cups.socket
+  register: enable_cups
+  changed_when: "'Created symlink' in enable_cups.stderr or 'Created symlink' in enable_cups.stdout"
+
+- name: "printing: enable avahi-daemon.service"
+  ansible.builtin.command: systemctl enable avahi-daemon.service
+  register: enable_avahi
+  changed_when: "'Created symlink' in enable_avahi.stderr or 'Created symlink' in enable_avahi.stdout"
