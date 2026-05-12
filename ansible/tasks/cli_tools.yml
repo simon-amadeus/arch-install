@@ -12,10 +12,13 @@
       - fd                 # find replacement
       - helix              # editor (binary: hx)
       - jq                 # JSON processor
+      - less
       - lsd                # ls with icons (needs a Nerd Font in the terminal)
+      - man-db             # for man command
       - openssh            # ssh client and server
       - ripgrep            # grep replacement
       - starship           # cross-shell prompt
+      - tealdeer           # tldr client
       - zsh-autosuggestions    # fish-style inline suggestions
       - zsh-syntax-highlighting  # real-time command highlighting
     state: present
