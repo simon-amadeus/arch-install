@@ -19,7 +19,7 @@
   register: snapper_root_config
 
 - name: "snapshots: create root snapper config"
-  ansible.builtin.command: snapper -c root create-config /
+  ansible.builtin.command: snapper --no-dbus -c root create-config /
   when: not snapper_root_config.stat.exists
   changed_when: true
 

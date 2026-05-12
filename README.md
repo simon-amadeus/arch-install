@@ -64,7 +64,7 @@ network: { dns: { primary, fallback }, dns_over_tls, dnssec }
 ### Flash to USB
 
 ```bash
-sudo dd if=arch-install.iso of=/dev/<usb> bs=16M oflag=direct status=progress
+sudo dd if=arch-install.iso of=/dev/<usb> bs=4M oflag=direct status=progress && sync
 ```
 
 ### Install (phases 1 + 2)
