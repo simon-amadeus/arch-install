@@ -1,0 +1,11 @@
+#!/bin/bash
+# Autologin {{ user.name }} once per boot on tty1.
+# /run is a tmpfs cleared each boot, so the flag resets automatically.
+# After the first login (or after logout), getty falls back to the normal
+# login prompt — logout actually works as expected.
+flag=/run/autologin-done
+if [[ ! -f "$flag" ]]; then
+    touch "$flag"
+    exec /sbin/agetty -o '-p -f -- \u' --noclear --autologin {{ user.name }} "$@"
+fi
+exec /sbin/agetty --noclear "$@"

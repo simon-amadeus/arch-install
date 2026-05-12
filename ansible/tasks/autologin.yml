@@ -1,4 +1,12 @@
 ---
+- name: "autologin: install wrapper script"
+  ansible.builtin.template:
+    src: agetty-autologin.j2
+    dest: /usr/local/bin/agetty-autologin
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: "autologin: create getty override directory"
   ansible.builtin.file:
     path: /etc/systemd/system/getty@tty1.service.d
@@ -12,6 +20,6 @@
     content: |
       [Service]
       ExecStart=
-      ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin {{ user.name }} %I $TERM
+      ExecStart=-/usr/local/bin/agetty-autologin %I $TERM
 # No daemon_reload: the chroot has no running PID 1. systemd picks up the
 # drop-in on first boot.
