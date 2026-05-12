@@ -1,14 +1,13 @@
 ---
 # Install user packages from dotfiles package lists.
-# Expects two plain-text files under ~/.config/pkglist/ (written by the
-# sync-pkglist timer that dotfiles.yml enables):
-#   pacman.txt  — official-repo packages (one per line, # = comment)
-#   aur.txt     — AUR packages           (one per line, # = comment)
+# Files are written by sync-pkglist.service (pacman -Qqen / pacman -Qqem):
+#   ~/.config/packages/pkglist.txt     — official-repo explicit packages
+#   ~/.config/packages/aur_pkglist.txt — AUR/foreign explicit packages
 # Both files are optional — a missing file is silently skipped.
 
 - name: "packages: read official package list"
   ansible.builtin.slurp:
-    src: "/home/{{ user.name }}/.config/pkglist/pacman.txt"
+    src: "/home/{{ user.name }}/.config/packages/pkglist.txt"
   register: pkg_pacman_raw
   ignore_errors: true
 
@@ -21,7 +20,6 @@
         | splitlines
         | map('trim')
         | select
-        | reject('match', '^#')
         | list
       }}
   when: pkg_pacman_raw is not failed
@@ -34,7 +32,7 @@
 
 - name: "packages: read AUR package list"
   ansible.builtin.slurp:
-    src: "/home/{{ user.name }}/.config/pkglist/aur.txt"
+    src: "/home/{{ user.name }}/.config/packages/aur_pkglist.txt"
   register: pkg_aur_raw
   ignore_errors: true
 
@@ -47,7 +45,6 @@
         | splitlines
         | map('trim')
         | select
-        | reject('match', '^#')
         | list
       }}
   when: pkg_aur_raw is not failed
