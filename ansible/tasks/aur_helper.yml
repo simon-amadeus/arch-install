@@ -1,6 +1,7 @@
 ---
 # Installs paru (AUR helper) as the primary user.
-# Uses paru-bin (pre-compiled) to avoid a full Rust toolchain compile.
+# Builds from source (paru) with the Rust toolchain to avoid libalpm issues
+# that can occur with pre-compiled binaries.
 #
 # Build and install are intentionally separated: makepkg runs as the user
 # with -d (no dep-install) so it never calls sudo internally. The resulting
@@ -11,23 +12,31 @@
     path: /usr/bin/paru
   register: paru_stat
 
+- name: "aur: install Rust toolchain and build dependencies"
+  ansible.builtin.package:
+    name:
+      - base-devel    # for makepkg and common build tools
+      - rust          # Rust compiler and cargo
+    state: present
+  when: not paru_stat.stat.exists
+
 - name: "aur: create AUR build directory"
   ansible.builtin.file:
-    path: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    path: "/home/{{ user.name }}/.cache/aur/paru"
     state: directory
     mode: '0755'
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
 
-- name: "aur: clone paru-bin from AUR"
+- name: "aur: clone paru from AUR"
   ansible.builtin.git:
-    repo: https://aur.archlinux.org/paru-bin.git
-    dest: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    repo: https://aur.archlinux.org/paru.git
+    dest: "/home/{{ user.name }}/.cache/aur/paru"
     force: true
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
 
-- name: "aur: import PGP keys listed in paru-bin PKGBUILD"
+- name: "aur: import PGP keys listed in paru PKGBUILD"
   ansible.builtin.shell:
     cmd: |
       bash -c '
@@ -38,28 +47,34 @@
           gpg --keyserver keys.openpgp.org --recv-keys "$key"
         done
       '
-    chdir: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    chdir: "/home/{{ user.name }}/.cache/aur/paru"
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
   changed_when: true
 
-- name: "aur: build paru-bin package"
+- name: "aur: build paru package"
   ansible.builtin.command:
     cmd: makepkg --noconfirm --noprogressbar -df
-    chdir: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    chdir: "/home/{{ user.name }}/.cache/aur/paru"
   become_user: "{{ user.name }}"
   when: not paru_stat.stat.exists
   changed_when: true
 
 - name: "aur: find built package"
   ansible.builtin.find:
-    paths: "/home/{{ user.name }}/.cache/aur/paru-bin"
+    paths: "/home/{{ user.name }}/.cache/aur/paru"
     patterns: "*.pkg.tar.zst"
   register: paru_pkg
   when: not paru_stat.stat.exists
 
-- name: "aur: install paru-bin with pacman"
+- name: "aur: install paru with pacman"
   ansible.builtin.command:
     cmd: "pacman -U --noconfirm {{ paru_pkg.files[0].path }}"
   when: not paru_stat.stat.exists
   changed_when: true
+
+- name: "aur: cleanup build dependencies"
+  ansible.builtin.package:
+    name:
+      - rust
+    state: absent
