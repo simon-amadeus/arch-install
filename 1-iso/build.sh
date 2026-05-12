@@ -52,9 +52,6 @@ rsync -a \
     --exclude='legacy' \
     "${REPO_ROOT}/" "${PROFILE_DIR}/airootfs/root/arch-install/"
 
-# mkarchiso/mksquashfs can silently strip execute bits — re-apply them explicitly.
-find "${PROFILE_DIR}/airootfs/root/arch-install" -name "*.sh" -exec chmod +x {} \;
-
 # Layer our airootfs overlay (vconsole, autologin banner, etc.)
 if [[ -d "${HERE}/airootfs" ]]; then
     rsync -a "${HERE}/airootfs/" "${PROFILE_DIR}/airootfs/"

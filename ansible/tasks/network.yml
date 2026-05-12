@@ -34,6 +34,7 @@
 
       [DHCP]
       RouteMetric=20
+      UseDNS=no
 
 - name: "network: write resolved DNS config"
   ansible.builtin.template:

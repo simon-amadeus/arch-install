@@ -17,7 +17,7 @@
       {{
         pkg_pacman_raw['content']
         | b64decode
-        | splitlines
+        | split('\n')
         | map('trim')
         | select
         | list
@@ -42,7 +42,7 @@
       {{
         pkg_aur_raw['content']
         | b64decode
-        | splitlines
+        | split('\n')
         | map('trim')
         | select
         | list
