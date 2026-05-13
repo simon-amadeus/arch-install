@@ -90,9 +90,9 @@ After first boot, connect to wifi and run:
 bash ~/arch-install/3-first-boot/first-boot.sh xps
 ```
 
-Installs paru, CLI tools, audio (pipewire), and sets up system services
+Installs CLI tools, audio (pipewire), and sets up system services
 (bluetooth, firewall, snapshots). Use `--tags <tag>` to run a single step —
-valid tags: `aur`, `cli`, `audio`, `bluetooth`, `firewall`, `printing`,
+valid tags: `cli`, `audio`, `bluetooth`, `firewall`, `printing`,
 `usb_automount`, `snapshots`, `secure_boot`.
 
 ### 5. Customize
@@ -103,7 +103,7 @@ bash ~/arch-install/4-customize/customize.sh xps
 
 Installs the sway desktop and optionally checks out your dotfiles
 (bare git repo, work-tree `~`) and installs official-repo user packages.
-Valid tags: `desktop`, `dotfiles`, `packages`.
+Valid tags: `aur`, `desktop`, `dotfiles`, `packages`.
 
 If `features.packages` is true and an AUR package list exists at
 `~/.config/packages/aur_pkglist.txt`, `customize.sh` then hands off to

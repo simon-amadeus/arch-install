@@ -18,6 +18,10 @@
           - features is defined
         fail_msg: "host config is missing required keys"
 
+    - name: AUR helper (paru)
+      ansible.builtin.import_tasks: tasks/aur_helper.yml
+      tags: [aur]
+
     - name: Desktop (sway)
       ansible.builtin.import_tasks: tasks/desktop_sway.yml
       tags: [desktop]
