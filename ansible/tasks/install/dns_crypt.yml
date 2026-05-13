@@ -14,7 +14,7 @@
 
 - name: "dns: write dnscrypt-proxy config"
   ansible.builtin.template:
-    src: dnscrypt-proxy.toml.j2
+    src: install/dnscrypt-proxy.toml.j2
     dest: /etc/dnscrypt-proxy/dnscrypt-proxy.toml
     mode: '0644'
 

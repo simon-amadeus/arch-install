@@ -37,76 +37,76 @@
         luks_uuid: "{{ luks_uuid_raw.stdout | trim }}"
 
     - name: Locale & console
-      ansible.builtin.import_tasks: tasks/locale.yml
+      ansible.builtin.import_tasks: tasks/install/locale.yml
       tags: [locale]
 
     - name: Timezone & clock
-      ansible.builtin.import_tasks: tasks/time.yml
+      ansible.builtin.import_tasks: tasks/install/time.yml
       tags: [time]
 
     - name: Hostname & hosts file
-      ansible.builtin.import_tasks: tasks/hostname.yml
+      ansible.builtin.import_tasks: tasks/install/hostname.yml
       tags: [hostname]
 
     - name: Network (iwd + systemd-networkd + resolved)
-      ansible.builtin.import_tasks: tasks/network.yml
+      ansible.builtin.import_tasks: tasks/install/network.yml
       tags: [network]
 
     - name: DNS encryption (dnscrypt-proxy + Anonymized DNSCrypt)
-      ansible.builtin.import_tasks: tasks/dns_crypt.yml
+      ansible.builtin.import_tasks: tasks/install/dns_crypt.yml
       tags: [dns]
 
     - name: mkinitcpio + Unified Kernel Image
-      ansible.builtin.import_tasks: tasks/mkinitcpio.yml
+      ansible.builtin.import_tasks: tasks/install/mkinitcpio.yml
       tags: [mkinitcpio]
 
     - name: systemd-boot
-      ansible.builtin.import_tasks: tasks/bootloader.yml
+      ansible.builtin.import_tasks: tasks/install/bootloader.yml
       tags: [bootloader]
 
     - name: User account
-      ansible.builtin.import_tasks: tasks/users.yml
+      ansible.builtin.import_tasks: tasks/install/users.yml
       tags: [users]
 
     - name: Stage install scripts in user home
-      ansible.builtin.import_tasks: tasks/stage_scripts.yml
+      ansible.builtin.import_tasks: tasks/install/stage_scripts.yml
       tags: [stage]
 
     - name: CLI tools (bat, lsd, helix, starship, …)
-      ansible.builtin.import_tasks: tasks/cli_tools.yml
+      ansible.builtin.import_tasks: tasks/install/cli_tools.yml
       tags: [cli]
 
     - name: Default zsh config (overwritten by dotfiles in setup phase)
-      ansible.builtin.import_tasks: tasks/zsh_defaults.yml
+      ansible.builtin.import_tasks: tasks/install/zsh_defaults.yml
       tags: [zsh]
       when: user.shell | default('') == '/bin/zsh'
 
     - name: Enable essential services
-      ansible.builtin.import_tasks: tasks/services.yml
+      ansible.builtin.import_tasks: tasks/install/services.yml
       tags: [services]
 
     - name: Bluetooth
-      ansible.builtin.import_tasks: tasks/bluetooth.yml
+      ansible.builtin.import_tasks: tasks/install/bluetooth.yml
       tags: [bluetooth]
       when: features.bluetooth | default(false)
 
     - name: Firewall (firewalld)
-      ansible.builtin.import_tasks: tasks/firewall.yml
+      ansible.builtin.import_tasks: tasks/install/firewall.yml
       tags: [firewall]
       when: features.firewalld | default(false)
 
     - name: Printing (CUPS + Avahi)
-      ansible.builtin.import_tasks: tasks/printing.yml
+      ansible.builtin.import_tasks: tasks/install/printing.yml
       tags: [printing]
       when: features.printing | default(false)
 
     - name: Autologin on tty1
-      ansible.builtin.import_tasks: tasks/autologin.yml
+      ansible.builtin.import_tasks: tasks/install/autologin.yml
       tags: [autologin]
       when: features.desktop | default('none') != 'none'
 
     - name: Btrfs snapshots (snapper + snap-pac)
-      ansible.builtin.import_tasks: tasks/snapshots.yml
+      ansible.builtin.import_tasks: tasks/install/snapshots.yml
       tags: [snapshots]
       when: features.snapshots | default(false)
 

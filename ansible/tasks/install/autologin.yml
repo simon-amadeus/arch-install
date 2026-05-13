@@ -1,7 +1,7 @@
 ---
 - name: "autologin: install wrapper script"
   ansible.builtin.template:
-    src: agetty-autologin.j2
+    src: install/agetty-autologin.j2
     dest: /usr/local/bin/agetty-autologin
     owner: root
     group: root

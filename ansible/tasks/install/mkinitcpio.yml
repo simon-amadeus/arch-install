@@ -8,14 +8,14 @@
 
 - name: "mkinitcpio: write /etc/mkinitcpio.conf"
   ansible.builtin.template:
-    src: mkinitcpio.conf.j2
+    src: install/mkinitcpio.conf.j2
     dest: /etc/mkinitcpio.conf
     mode: '0644'
   register: mkinitcpio_conf
 
 - name: "mkinitcpio: write kernel command line"
   ansible.builtin.template:
-    src: kernel-cmdline.j2
+    src: install/kernel-cmdline.j2
     dest: /etc/kernel/cmdline
     mode: '0644'
   register: kernel_cmdline
@@ -28,7 +28,7 @@
 
 - name: "mkinitcpio: write UKI preset for {{ kernel }}"
   ansible.builtin.template:
-    src: kernel.preset.j2
+    src: install/kernel.preset.j2
     dest: "/etc/mkinitcpio.d/{{ kernel }}.preset"
     mode: '0644'
   register: kernel_preset

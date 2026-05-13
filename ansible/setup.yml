@@ -29,41 +29,41 @@
         fail_msg: "host config is missing required keys"
 
     - name: AUR helper (paru)
-      ansible.builtin.import_tasks: tasks/aur_helper.yml
+      ansible.builtin.import_tasks: tasks/setup/aur_helper.yml
       tags: [aur]
 
     - name: Audio (pipewire)
-      ansible.builtin.import_tasks: tasks/audio.yml
+      ansible.builtin.import_tasks: tasks/setup/audio.yml
       tags: [audio]
       when: features.audio | default(false)
 
     - name: Desktop (sway)
-      ansible.builtin.import_tasks: tasks/desktop_sway.yml
+      ansible.builtin.import_tasks: tasks/setup/desktop_sway.yml
       tags: [desktop]
       when: features.desktop | default('none') == 'sway'
 
     - name: USB automount (udiskie)
-      ansible.builtin.import_tasks: tasks/usb_automount.yml
+      ansible.builtin.import_tasks: tasks/setup/usb_automount.yml
       tags: [usb_automount]
       when: features.usb_automount | default(false)
 
     - name: Secure Boot (sbctl keys + sign UKI)
-      ansible.builtin.import_tasks: tasks/secure_boot.yml
+      ansible.builtin.import_tasks: tasks/setup/secure_boot.yml
       tags: [secure_boot]
       when: features.secure_boot | default(false)
 
     - name: Secure Boot key enrollment into UEFI
-      ansible.builtin.import_tasks: tasks/secure_boot_enroll.yml
+      ansible.builtin.import_tasks: tasks/setup/secure_boot_enroll.yml
       tags: [secure_boot]
       when: features.secure_boot | default(false)
 
     - name: Dotfiles (bare git)
-      ansible.builtin.import_tasks: tasks/dotfiles.yml
+      ansible.builtin.import_tasks: tasks/setup/dotfiles.yml
       tags: [dotfiles]
       when: user.dotfiles_repo is defined and features.dotfiles | default(false)
 
     - name: User packages (from dotfiles package lists)
-      ansible.builtin.import_tasks: tasks/packages.yml
+      ansible.builtin.import_tasks: tasks/setup/packages.yml
       tags: [packages]
       when: features.packages | default(false)
 
