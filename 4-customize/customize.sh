@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# User environment setup. Runs on the booted system as the primary user.
+# Personal environment — phase 4. Runs after first-boot setup.
+# Installs the desktop environment, personal dotfiles, and user packages.
 #
-# Run after first boot, connected to wifi. Prompts once for sudo password (-K).
-#
-# Usage: ./3-setup/setup.sh <hostname>
-# Example: ./3-setup/setup.sh xps
+# Usage:   ./4-customize/customize.sh <hostname>
+# Example: ./4-customize/customize.sh xps
 
 set -Eeuo pipefail
 
@@ -21,11 +20,11 @@ host_config="${REPO_ROOT}/hosts/${host}.yml"
 command -v ansible-playbook >/dev/null \
     || { echo "error: ansible-playbook not found — is ansible installed?"; exit 1; }
 
-echo "=== setup — host: ${host} ==="
+echo "=== customize — host: ${host} ==="
 
-ANSIBLE_CONFIG="${REPO_ROOT}/ansible/ansible.cfg" \
+ANSIBLE_CONFIG="${HERE}/ansible.cfg" \
 ansible-playbook \
-    -i "${REPO_ROOT}/ansible/inventory.ini" \
+    -i "${HERE}/inventory.ini" \
     -e "@${host_config}" \
-    "${REPO_ROOT}/ansible/setup.yml" \
+    "${HERE}/customize.yml" \
     "$@"

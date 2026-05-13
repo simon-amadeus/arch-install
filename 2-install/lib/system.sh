@@ -48,10 +48,7 @@ stage_ansible() {
     log "staging repo into ${MOUNT_ROOT}/root/install"
 
     install -d -m 0700 "${MOUNT_ROOT}/root/install"
-    # Copy all dirs needed by both the Ansible run (ansible/, hosts/) and
-    # post-boot setup (3-setup/setup.sh references ansible/ and hosts/ via
-    # REPO_ROOT). 2-install/ is included for reference. 1-iso/ is not needed.
-    for d in ansible hosts 2-install 3-setup; do
+    for d in 2-install 3-first-boot 4-customize hosts; do
         [[ -d "${repo_root}/${d}" ]] && cp -r "${repo_root}/${d}" "${MOUNT_ROOT}/root/install/"
     done
     [[ -f "${repo_root}/README.md" ]] && cp "${repo_root}/README.md" "${MOUNT_ROOT}/root/install/" || true
@@ -68,13 +65,13 @@ copy_iwd_state() {
 
 run_ansible_in_chroot() {
     local host="$1"
-    log "running ansible system playbook inside chroot"
+    log "running ansible chroot playbook inside chroot"
     arch-chroot "$MOUNT_ROOT" \
-        env ANSIBLE_CONFIG=/root/install/ansible/ansible.cfg \
+        env ANSIBLE_CONFIG=/root/install/2-install/ansible.cfg \
         ansible-playbook \
-            -i /root/install/ansible/inventory.ini \
+            -i /root/install/2-install/inventory.ini \
             -e "@/root/install/hosts/${host}.yml" \
-            /root/install/ansible/install.yml
+            /root/install/2-install/install.yml
 }
 
 setup_resolv_symlink() {

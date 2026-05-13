@@ -6,7 +6,7 @@
 #   1. Boot into UEFI firmware settings (F2/Del/Esc at POST)
 #   2. Navigate to Secure Boot → clear or delete all existing keys
 #   3. Save and reboot, then re-run:
-#      ./3-setup/setup.sh <host> --tags secure_boot
+#      ./3-first-boot/first-boot.sh <host> --tags secure_boot
 
 - name: "secure_boot: enroll keys into UEFI"
   ansible.builtin.command: sbctl enroll-keys --microsoft
@@ -23,7 +23,7 @@
         1. Boot into UEFI firmware settings (F2/Del/Esc at POST)
         2. Navigate to Secure Boot → clear or delete all existing keys
         3. Save and reboot, then re-run:
-           ./3-setup/setup.sh <host> --tags secure_boot
+           ./3-first-boot/first-boot.sh <host> --tags secure_boot
   when: >-
     enroll_result.rc != 0 and
     'already' not in (enroll_result.stderr | lower) and

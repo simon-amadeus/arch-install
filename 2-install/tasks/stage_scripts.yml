@@ -1,8 +1,8 @@
 ---
 # Makes the install repo available in the user's home on the booted system.
 # /root/install is staged by the bootstrap before the Ansible run; this task
-# copies it to ~/arch-install so the user can run 3-setup/setup.sh immediately
-# after first boot without manually cloning.
+# copies it to ~/arch-install so the user can run 3-first-boot/first-boot.sh
+# immediately after first boot without manually cloning.
 
 - name: "stage_scripts: copy install repo to user home"
   ansible.builtin.command:

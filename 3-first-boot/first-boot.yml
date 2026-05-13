@@ -1,0 +1,76 @@
+---
+# First-boot setup — phase 3. Runs on the booted system as the primary user.
+# Produces a working minimal system: AUR support, CLI tools, and system services.
+# No desktop or personal config — that is phase 4 (customize).
+#
+# Usage:
+#   ./3-first-boot/first-boot.sh <hostname>
+
+- name: First-boot system setup
+  hosts: local
+  gather_facts: true
+  become: true
+
+  vars_prompt:
+    - name: sudo_password
+      prompt: "sudo password"
+      private: true
+
+  vars:
+    ansible_become_password: "{{ sudo_password }}"
+
+  tasks:
+    - name: Sanity-check required vars
+      ansible.builtin.assert:
+        that:
+          - user.name is defined
+          - features is defined
+        fail_msg: "host config is missing required keys"
+
+    - name: AUR helper (paru)
+      ansible.builtin.import_tasks: tasks/aur_helper.yml
+      tags: [aur]
+
+    - name: CLI tools (bat, lsd, helix, starship, …)
+      ansible.builtin.import_tasks: tasks/cli_tools.yml
+      tags: [cli]
+
+    - name: Audio (pipewire)
+      ansible.builtin.import_tasks: tasks/audio.yml
+      tags: [audio]
+      when: features.audio | default(false)
+
+    - name: Bluetooth
+      ansible.builtin.import_tasks: tasks/bluetooth.yml
+      tags: [bluetooth]
+      when: features.bluetooth | default(false)
+
+    - name: Firewall (firewalld)
+      ansible.builtin.import_tasks: tasks/firewall.yml
+      tags: [firewall]
+      when: features.firewalld | default(false)
+
+    - name: Printing (CUPS + Avahi)
+      ansible.builtin.import_tasks: tasks/printing.yml
+      tags: [printing]
+      when: features.printing | default(false)
+
+    - name: USB automount (udiskie)
+      ansible.builtin.import_tasks: tasks/usb_automount.yml
+      tags: [usb_automount]
+      when: features.usb_automount | default(false)
+
+    - name: Btrfs snapshots (snapper + snap-pac)
+      ansible.builtin.import_tasks: tasks/snapshots.yml
+      tags: [snapshots]
+      when: features.snapshots | default(false)
+
+    - name: Secure Boot (sbctl keys + sign UKI)
+      ansible.builtin.import_tasks: tasks/secure_boot.yml
+      tags: [secure_boot]
+      when: features.secure_boot | default(false)
+
+    - name: Secure Boot key enrollment into UEFI
+      ansible.builtin.import_tasks: tasks/secure_boot_enroll.yml
+      tags: [secure_boot]
+      when: features.secure_boot | default(false)

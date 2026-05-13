@@ -1,0 +1,42 @@
+---
+# Personal environment — phase 4. Runs after first-boot setup.
+# Installs the desktop environment, personal dotfiles, and user packages.
+#
+# Usage:
+#   ./4-customize/customize.sh <hostname>
+
+- name: Personal environment
+  hosts: local
+  gather_facts: true
+  become: true
+
+  vars_prompt:
+    - name: sudo_password
+      prompt: "sudo password"
+      private: true
+
+  vars:
+    ansible_become_password: "{{ sudo_password }}"
+
+  tasks:
+    - name: Sanity-check required vars
+      ansible.builtin.assert:
+        that:
+          - user.name is defined
+          - features is defined
+        fail_msg: "host config is missing required keys"
+
+    - name: Desktop (sway)
+      ansible.builtin.import_tasks: tasks/desktop_sway.yml
+      tags: [desktop]
+      when: features.desktop | default('none') == 'sway'
+
+    - name: Dotfiles (bare git)
+      ansible.builtin.import_tasks: tasks/dotfiles.yml
+      tags: [dotfiles]
+      when: user.dotfiles_repo is defined and features.dotfiles | default(false)
+
+    - name: User packages (from dotfiles package lists)
+      ansible.builtin.import_tasks: tasks/packages.yml
+      tags: [packages]
+      when: features.packages | default(false)

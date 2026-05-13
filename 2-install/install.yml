@@ -1,0 +1,88 @@
+---
+# Chroot configuration — phase 2. Runs inside arch-chroot.
+# Produces a bootable, network-capable system. Everything else is phase 3+.
+#
+# Idempotent — every task is named so failures point at exactly which step
+# died. Re-running after a fix only re-executes failed/changed tasks.
+#
+# Variables come from -e @hosts/<host>.yml passed by 2-install/install.sh.
+
+- name: Chroot system configuration
+  hosts: local
+  gather_facts: true
+  become: false   # we're already root inside the chroot
+
+  vars:
+    crypt_name: cryptroot
+    luks_part_label: cryptsystem
+
+  tasks:
+    - name: Sanity-check required vars
+      ansible.builtin.assert:
+        that:
+          - hostname is defined
+          - timezone is defined
+          - locale is defined
+          - kernel is defined
+          - user.name is defined
+          - disk.device is defined
+        fail_msg: "host config is missing required keys"
+
+    - name: Resolve LUKS partition UUID by label
+      ansible.builtin.command: blkid -s UUID -o value -t LABEL={{ luks_part_label }}
+      register: luks_uuid_raw
+      changed_when: false
+
+    - name: Set luks_uuid fact
+      ansible.builtin.set_fact:
+        luks_uuid: "{{ luks_uuid_raw.stdout | trim }}"
+
+    - name: Locale & console
+      ansible.builtin.import_tasks: tasks/locale.yml
+      tags: [locale]
+
+    - name: Timezone & clock
+      ansible.builtin.import_tasks: tasks/time.yml
+      tags: [time]
+
+    - name: Hostname & hosts file
+      ansible.builtin.import_tasks: tasks/hostname.yml
+      tags: [hostname]
+
+    - name: Network (iwd + systemd-networkd + resolved)
+      ansible.builtin.import_tasks: tasks/network.yml
+      tags: [network]
+
+    - name: DNS encryption (dnscrypt-proxy + Anonymized DNSCrypt)
+      ansible.builtin.import_tasks: tasks/dns_crypt.yml
+      tags: [dns]
+
+    - name: mkinitcpio + Unified Kernel Image
+      ansible.builtin.import_tasks: tasks/mkinitcpio.yml
+      tags: [mkinitcpio]
+
+    - name: systemd-boot
+      ansible.builtin.import_tasks: tasks/bootloader.yml
+      tags: [bootloader]
+
+    - name: User account
+      ansible.builtin.import_tasks: tasks/users.yml
+      tags: [users]
+
+    - name: Default zsh config (overwritten by dotfiles in customize phase)
+      ansible.builtin.import_tasks: tasks/zsh_defaults.yml
+      tags: [zsh]
+      when: user.shell | default('') == '/bin/zsh'
+
+    - name: Enable essential services
+      ansible.builtin.import_tasks: tasks/services.yml
+      tags: [services]
+
+    - name: Autologin on tty1
+      ansible.builtin.import_tasks: tasks/autologin.yml
+      tags: [autologin]
+      when: features.desktop | default('none') != 'none'
+
+    - name: Stage repo in user home for post-boot phases
+      ansible.builtin.import_tasks: tasks/stage_scripts.yml
+      tags: [stage]

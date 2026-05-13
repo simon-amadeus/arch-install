@@ -2,7 +2,7 @@
 # Re-run the Ansible phase on an already-prepared chroot.
 #
 # Use this when the Ansible step fails but disk prep + pacstrap completed
-# successfully. Syncs the latest ansible/ and hosts/ into the chroot then
+# successfully. Syncs the latest 2-install/ and hosts/ into the chroot then
 # reruns the playbook — no reboot, no repartitioning.
 #
 # Usage: ./2-install/recover.sh <hostname>
@@ -31,7 +31,7 @@ mountpoint -q "${MOUNT_ROOT}" \
 
 log "syncing repo into chroot"
 install -d -m 0700 "${MOUNT_ROOT}/root/install"
-for d in ansible hosts 2-install 3-setup; do
+for d in 2-install 3-first-boot 4-customize hosts; do
     rm -rf "${MOUNT_ROOT}/root/install/${d}"
     [[ -d "${REPO_ROOT}/${d}" ]] && cp -r "${REPO_ROOT}/${d}" "${MOUNT_ROOT}/root/install/"
 done
@@ -39,8 +39,8 @@ done
 
 log "running ansible playbook inside chroot"
 arch-chroot "$MOUNT_ROOT" \
-    env ANSIBLE_CONFIG=/root/install/ansible/ansible.cfg \
+    env ANSIBLE_CONFIG=/root/install/2-install/ansible.cfg \
     ansible-playbook \
-        -i /root/install/ansible/inventory.ini \
+        -i /root/install/2-install/inventory.ini \
         -e "@/root/install/hosts/${host}.yml" \
-        /root/install/ansible/install.yml
+        /root/install/2-install/install.yml

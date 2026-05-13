@@ -1,7 +1,7 @@
 ---
 - name: "locale: write /etc/locale.gen"
   ansible.builtin.template:
-    src: install/locale.gen.j2
+    src: locale.gen.j2
     dest: /etc/locale.gen
     mode: '0644'
   register: locale_gen
@@ -13,7 +13,7 @@
 
 - name: "locale: write /etc/locale.conf"
   ansible.builtin.template:
-    src: install/locale.conf.j2
+    src: locale.conf.j2
     dest: /etc/locale.conf
     mode: '0644'
 
