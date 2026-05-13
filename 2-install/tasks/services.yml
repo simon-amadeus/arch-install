@@ -13,4 +13,5 @@
     - systemd-networkd.service
     - systemd-resolved.service
     - systemd-timesyncd.service
-    - fstrim.timer
+  # fstrim.timer omitted on purpose: LUKS is open without --allow-discards,
+  # so FITRIM through the encrypted layer is a no-op.

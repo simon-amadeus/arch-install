@@ -72,7 +72,11 @@ btrfs_create_subvolumes() {
 
 btrfs_mount_all() {
     local dev="/dev/mapper/${CRYPT_NAME}"
-    local opts="noatime,compress=zstd:1,ssd,discard=async,space_cache=v2"
+    # No discard=async: LUKS was opened without --allow-discards, so any
+    # discard from btrfs would be dropped at the LUKS layer anyway. Trading
+    # SSD wear-levelling efficiency for the privacy gain of not exposing
+    # used/free block boundaries.
+    local opts="noatime,compress=zstd:1,ssd,space_cache=v2"
 
     log "mounting btrfs subvolumes"
     mount -o "${opts},subvol=@" "$dev" "$MOUNT_ROOT"
