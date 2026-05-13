@@ -74,7 +74,7 @@ sudo dd if=arch-install.iso of=/dev/<usb> bs=4M oflag=direct status=progress && 
 Boot the ISO — the banner shows the next steps. Connect to wifi (`iwctl`), then:
 
 ```bash
-~/arch-install/2-install/install.sh xps
+bash ~/arch-install/2-install/install.sh xps
 ```
 
 Wipes the disk, sets up LUKS + btrfs, pacstraps the base system, runs the
@@ -87,7 +87,7 @@ log in.
 After first boot, connect to wifi and run:
 
 ```bash
-~/arch-install/3-first-boot/first-boot.sh xps
+bash ~/arch-install/3-first-boot/first-boot.sh xps
 ```
 
 Installs paru, CLI tools, audio (pipewire), and sets up system services
@@ -98,7 +98,7 @@ valid tags: `aur`, `cli`, `audio`, `bluetooth`, `firewall`, `printing`,
 ### 5. Customize
 
 ```bash
-~/arch-install/4-customize/customize.sh xps
+bash ~/arch-install/4-customize/customize.sh xps
 ```
 
 Installs the sway desktop and optionally checks out your dotfiles
@@ -123,7 +123,7 @@ The entire Secure Boot flow runs in phase 3 (booted system). Sequence:
 5. Run:
 
 ```bash
-~/arch-install/3-first-boot/first-boot.sh xps --tags secure_boot
+bash ~/arch-install/3-first-boot/first-boot.sh xps --tags secure_boot
 ```
 
 This creates the sbctl keys, signs the UKI, and enrolls the keys into firmware
@@ -137,7 +137,7 @@ If phase 2 fails mid-run, the disk is already prepared — fix the issue and
 re-run only the Ansible playbook without touching the disk:
 
 ```bash
-./2-install/recover.sh xps [--tags <tag>]
+bash 2-install/recover.sh xps [--tags <tag>]
 ```
 
 Valid phase 2 tags: `locale`, `time`, `hostname`, `network`, `dns`,
