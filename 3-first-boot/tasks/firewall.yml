@@ -1,8 +1,28 @@
 ---
+# Defaults to firewalld's `public` zone, but with `ssh` removed — there is no
+# sshd in this install, and leaving the service open invites accidental
+# exposure if sshd is enabled later. `mdns` is added only when printing is
+# enabled (needed for CUPS/Avahi printer discovery).
+
 - name: "firewall: install firewalld"
   ansible.builtin.package:
     name: firewalld
     state: present
+
+- name: "firewall: write hardened public zone"
+  ansible.builtin.copy:
+    dest: /etc/firewalld/zones/public.xml
+    mode: '0640'
+    content: |
+      <?xml version="1.0" encoding="utf-8"?>
+      <zone>
+        <short>Public</short>
+        <description>Client laptop default zone. No services besides DHCPv6 (and mDNS when printing).</description>
+        <service name="dhcpv6-client"/>
+      {% if features.printing | default(false) %}
+        <service name="mdns"/>
+      {% endif %}
+      </zone>
 
 - name: "firewall: enable firewalld.service"
   ansible.builtin.command: systemctl enable firewalld.service
