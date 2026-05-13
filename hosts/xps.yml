@@ -54,18 +54,5 @@ features:
   dotfiles: true           # set true after dotfiles repo is reviewed and restructured
   packages: true           # install user packages from the dotfiles repo's package lists
 
-# Network configuration applied to the installed system
-network:
-  dns:
-    primary:
-      - 1.1.1.1
-      - 1.0.0.1
-      - 2606:4700:4700::1111
-      - 2606:4700:4700::1001
-    fallback:
-      - 208.67.222.222
-      - 208.67.220.220
-      - 2620:119:53::53
-      - 2620:119:35::35
-  dns_over_tls: strict
-  dnssec: yes
+# DNS is handled by dnscrypt-proxy with Anonymized DNSCrypt.
+# systemd-resolved forwards to 127.0.0.2; no upstream IPs needed here.

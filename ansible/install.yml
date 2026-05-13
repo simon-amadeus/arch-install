@@ -52,6 +52,10 @@
       ansible.builtin.import_tasks: tasks/network.yml
       tags: [network]
 
+    - name: DNS encryption (dnscrypt-proxy + Anonymized DNSCrypt)
+      ansible.builtin.import_tasks: tasks/dns_crypt.yml
+      tags: [dns]
+
     - name: mkinitcpio + Unified Kernel Image
       ansible.builtin.import_tasks: tasks/mkinitcpio.yml
       tags: [mkinitcpio]

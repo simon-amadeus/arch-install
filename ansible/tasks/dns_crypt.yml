@@ -1,0 +1,24 @@
+---
+- name: "dns: install dnscrypt-proxy"
+  ansible.builtin.package:
+    name: dnscrypt-proxy
+    state: present
+
+- name: "dns: ensure cache directory exists"
+  ansible.builtin.file:
+    path: /var/cache/dnscrypt-proxy
+    state: directory
+    owner: dnscrypt-proxy
+    group: dnscrypt-proxy
+    mode: '0750'
+
+- name: "dns: write dnscrypt-proxy config"
+  ansible.builtin.template:
+    src: dnscrypt-proxy.toml.j2
+    dest: /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+    mode: '0644'
+
+- name: "dns: enable dnscrypt-proxy.service"
+  ansible.builtin.command: systemctl enable dnscrypt-proxy.service
+  register: enable_result
+  changed_when: "'Created symlink' in enable_result.stderr or 'Created symlink' in enable_result.stdout"

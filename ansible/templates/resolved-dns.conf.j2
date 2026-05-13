@@ -1,8 +1,7 @@
 [Resolve]
-DNS={{ network.dns.primary | join(' ') }}
-FallbackDNS={{ network.dns.fallback | join(' ') }}
-DNSSEC={{ network.dnssec | default('yes') }}
-DNSOverTLS={{ network.dns_over_tls | default('strict') }}
+DNS=127.0.0.2
+DNSOverTLS=no
+DNSSEC=no
 Cache=yes
 LLMNR=no
 MulticastDNS=no
