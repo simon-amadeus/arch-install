@@ -44,13 +44,20 @@ cp -r "$ARCHISO_SOURCE" "$PROFILE_DIR"
     echo "reflector"
 } >> "${PROFILE_DIR}/packages.x86_64"
 
-# Stage the repo into the live ISO under /root/arch-install
+# Stage the repo into the live ISO under /root/arch-install.
+# Allowlist what ships — anything not listed here stays on the build machine.
+# This keeps things like .claude/, *.iso, *.log, editor temp files, and
+# anything else in the working tree from leaking into the ISO.
 mkdir -p "${PROFILE_DIR}/airootfs/root/arch-install"
-rsync -a \
-    --exclude='.git' \
-    --exclude='.tmp-iso' \
-    --exclude='legacy' \
-    "${REPO_ROOT}/" "${PROFILE_DIR}/airootfs/root/arch-install/"
+for entry in 1-build 2-install 3-first-boot 4-customize hosts README.md; do
+    src="${REPO_ROOT}/${entry}"
+    [[ -e "$src" ]] || continue
+    if [[ -d "$src" ]]; then
+        rsync -a "${src}/" "${PROFILE_DIR}/airootfs/root/arch-install/${entry}/"
+    else
+        cp "$src" "${PROFILE_DIR}/airootfs/root/arch-install/${entry}"
+    fi
+done
 
 # Layer our airootfs overlay (vconsole, autologin banner, etc.)
 if [[ -d "${HERE}/airootfs" ]]; then
