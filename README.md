@@ -25,7 +25,7 @@ swapfile, no separate plaintext swap partition.
 
 ```
 /dev/<disk>
-├── p1  ESP (FAT32, 1 GiB)              → /boot
+├── p1  ESP (FAT32, 1 GiB)        → /boot
 └── p2  LUKS2 ──→ btrfs
                   ├── @           → /
                   ├── @home       → /home
