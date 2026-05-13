@@ -14,11 +14,12 @@
     dest: /etc/iwd/main.conf
     mode: '0644'
     content: |
+      # iwd handles 802.11 association only.
+      # IP/DHCP is systemd-networkd's job (see 25-wireless.network), DNS is
+      # systemd-resolved's. Setting EnableNetworkConfiguration=true here would
+      # race networkd for DHCP.
       [General]
-      EnableNetworkConfiguration=true
-
-      [Network]
-      NameResolvingService=systemd
+      EnableNetworkConfiguration=false
 
 - name: "network: write systemd-networkd wireless profile"
   ansible.builtin.copy:
