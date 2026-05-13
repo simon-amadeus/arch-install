@@ -17,12 +17,20 @@ REPO_ROOT="$(cd "${HERE}/.." && pwd)"
 source "${HERE}/lib/common.sh"
 trap 'on_err $LINENO' ERR
 
+# shellcheck source=lib/config.sh
+source "${HERE}/lib/config.sh"
+# shellcheck source=lib/system.sh
+source "${HERE}/lib/system.sh"
+
 MOUNT_ROOT="/mnt"
 
 require_root
 
 host="${1:-}"
 [[ -n "$host" ]] || die "usage: $0 <host>   (e.g. $0 xps)"
+
+host_config="${REPO_ROOT}/hosts/${host}.yml"
+load_host_config "$host_config"
 
 mountpoint -q "${MOUNT_ROOT}" \
     || die "${MOUNT_ROOT} is not mounted — has install.sh run yet?"
@@ -44,3 +52,8 @@ arch-chroot "$MOUNT_ROOT" \
         -i /root/install/2-install/inventory.ini \
         -e "@/root/install/hosts/${host}.yml" \
         /root/install/2-install/install.yml
+
+setup_resolv_symlink
+set_passwords_in_chroot
+
+log "recover complete. Unmount with:  umount -R ${MOUNT_ROOT} && swapoff -a && reboot"
