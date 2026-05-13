@@ -4,17 +4,13 @@
     name: dnscrypt-proxy
     state: present
 
-- name: "dns: create dnscrypt-proxy system user"
-  ansible.builtin.command: systemd-sysusers /usr/lib/sysusers.d/dnscrypt-proxy.conf
+- name: "dns: apply sysusers declarations"
+  ansible.builtin.command: systemd-sysusers
   changed_when: false
 
-- name: "dns: ensure cache directory exists"
-  ansible.builtin.file:
-    path: /var/cache/dnscrypt-proxy
-    state: directory
-    owner: dnscrypt-proxy
-    group: dnscrypt-proxy
-    mode: '0750'
+- name: "dns: apply tmpfiles declarations"
+  ansible.builtin.command: systemd-tmpfiles --create
+  changed_when: false
 
 - name: "dns: write dnscrypt-proxy config"
   ansible.builtin.template:
