@@ -1,16 +1,14 @@
 ---
-# Writes a minimal ~/.zshrc that wires up the installed zsh plugins and
-# starship. Runs during the install phase so the shell is functional on first
-# boot. The setup phase's dotfiles task overwrites this with the user's own
-# ~/.zshrc if dotfiles are configured.
+# Writes an empty ~/.zshrc during install. Plugins and starship are not
+# installed until phase 3, so sourcing them here would produce errors on
+# first boot. Phase 3's zsh_defaults task writes the real default once the
+# packages are present. Phase 4's dotfiles task overwrites it with the
+# user's own ~/.zshrc if dotfiles are configured.
 
-- name: "zsh_defaults: write default ~/.zshrc"
+- name: "zsh_defaults: write empty ~/.zshrc"
   ansible.builtin.copy:
     dest: "/home/{{ user.name }}/.zshrc"
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
     mode: '0644'
-    content: |
-      source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-      source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-      eval "$(starship init zsh)"
+    content: ""

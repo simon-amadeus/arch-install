@@ -23,6 +23,10 @@
       ansible.builtin.import_tasks: tasks/cli_tools.yml
       tags: [cli]
 
+    - name: Default ~/.zshrc (plugins + starship)
+      ansible.builtin.import_tasks: tasks/zsh_defaults.yml
+      tags: [cli]
+
     - name: Audio (pipewire)
       ansible.builtin.import_tasks: tasks/audio.yml
       tags: [audio]

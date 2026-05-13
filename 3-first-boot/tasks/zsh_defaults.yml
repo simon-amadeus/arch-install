@@ -1,0 +1,16 @@
+---
+# Writes a default ~/.zshrc that wires up the plugins and starship installed
+# by cli_tools. Runs after those packages are present so no errors occur on
+# first login. Phase 4's dotfiles task overwrites this with the user's own
+# ~/.zshrc if dotfiles are configured.
+
+- name: "zsh_defaults: write default ~/.zshrc"
+  ansible.builtin.copy:
+    dest: "/home/{{ user.name }}/.zshrc"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: '0644'
+    content: |
+      source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+      source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+      eval "$(starship init zsh)"
