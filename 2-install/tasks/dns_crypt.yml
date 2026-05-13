@@ -4,6 +4,10 @@
     name: dnscrypt-proxy
     state: present
 
+- name: "dns: create dnscrypt-proxy system user"
+  ansible.builtin.command: systemd-sysusers /usr/lib/sysusers.d/dnscrypt-proxy.conf
+  changed_when: false
+
 - name: "dns: ensure cache directory exists"
   ansible.builtin.file:
     path: /var/cache/dnscrypt-proxy
