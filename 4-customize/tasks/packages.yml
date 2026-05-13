@@ -1,9 +1,11 @@
 ---
-# Install user packages from dotfiles package lists.
-# Files are written by sync-pkglist.service (pacman -Qqen / pacman -Qqem):
-#   ~/.config/packages/pkglist.txt     — official-repo explicit packages
-#   ~/.config/packages/aur_pkglist.txt — AUR/foreign explicit packages
-# Both files are optional — a missing file is silently skipped.
+# Install user packages from the dotfiles package list. Only official-repo
+# packages are handled here — AUR is interactive and lives in aur-install.sh,
+# which the customize.sh wrapper invokes after this playbook completes.
+#
+# File is written by sync-pkglist.service (pacman -Qqen):
+#   ~/.config/packages/pkglist.txt — official-repo explicit packages
+# Missing file is silently skipped.
 
 - name: "packages: read official package list"
   ansible.builtin.slurp:
@@ -29,31 +31,3 @@
     name: "{{ pacman_packages }}"
     state: present
   when: pacman_packages is defined and pacman_packages | length > 0
-
-- name: "packages: read AUR package list"
-  ansible.builtin.slurp:
-    src: "/home/{{ user.name }}/.config/packages/aur_pkglist.txt"
-  register: pkg_aur_raw
-  ignore_errors: true
-
-- name: "packages: set AUR package list fact"
-  ansible.builtin.set_fact:
-    aur_packages: >-
-      {{
-        pkg_aur_raw['content']
-        | b64decode
-        | split
-        | map('trim')
-        | select
-        | list
-      }}
-  when: pkg_aur_raw is not failed
-
-- name: "packages: install AUR packages via paru"
-  ansible.builtin.command:
-    argv: "{{ ['paru', '--noconfirm', '-S', '--needed', '--sudoflags', '-S'] + aur_packages }}"
-    stdin: "{{ sudo_password }}\n"
-  become_user: "{{ user.name }}"
-  no_log: true
-  when: aur_packages is defined and aur_packages | length > 0
-  changed_when: true

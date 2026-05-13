@@ -102,8 +102,15 @@ valid tags: `aur`, `cli`, `audio`, `bluetooth`, `firewall`, `printing`,
 ```
 
 Installs the sway desktop and optionally checks out your dotfiles
-(bare git repo, work-tree `~`) and installs user packages.
+(bare git repo, work-tree `~`) and installs official-repo user packages.
 Valid tags: `desktop`, `dotfiles`, `packages`.
+
+If `features.packages` is true and an AUR package list exists at
+`~/.config/packages/aur_pkglist.txt`, `customize.sh` then hands off to
+`4-customize/aur-install.sh`. AUR installs are interactive on purpose —
+paru shows each PKGBUILD before building so a typosquatted or hijacked
+package can be caught before it runs as your user. The same script can
+be re-run later by itself any time the AUR package list changes.
 
 ### Secure Boot
 

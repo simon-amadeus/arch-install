@@ -9,15 +9,7 @@
 - name: First-boot system setup
   hosts: local
   gather_facts: true
-  become: true
-
-  vars_prompt:
-    - name: sudo_password
-      prompt: "sudo password"
-      private: true
-
-  vars:
-    ansible_become_password: "{{ sudo_password }}"
+  become: true   # sudo password is supplied via ansible-playbook -K
 
   tasks:
     - name: Sanity-check required vars

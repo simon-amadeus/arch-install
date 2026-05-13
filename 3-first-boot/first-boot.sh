@@ -23,7 +23,7 @@ command -v ansible-playbook >/dev/null \
 echo "=== first-boot — host: ${host} ==="
 
 ANSIBLE_CONFIG="${HERE}/ansible.cfg" \
-ansible-playbook \
+ansible-playbook -K \
     -i "${HERE}/inventory.ini" \
     -e "@${host_config}" \
     "${HERE}/first-boot.yml" \
