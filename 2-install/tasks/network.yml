@@ -37,6 +37,9 @@
       RouteMetric=20
       UseDNS=no
 
+      [IPv6AcceptRA]
+      UseDNS=no
+
 - name: "network: write resolved DNS config"
   ansible.builtin.template:
     src: resolved-dns.conf.j2
