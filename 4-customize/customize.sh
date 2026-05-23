@@ -40,5 +40,5 @@ aur_list="${HOME}/.config/packages/aur_pkglist.txt"
 if [[ "$want_aur" == "true" && -f "$aur_list" ]]; then
     echo
     echo "=== AUR packages (interactive — paru will show each PKGBUILD) ==="
-    "${HERE}/aur-install.sh"
+    bash "${HERE}/aur-install.sh"
 fi
