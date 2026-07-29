@@ -12,7 +12,7 @@ BASE_PACKAGES=(
     vim
     iwd
     python ansible
-    yq
+    go-yq    # same yq implementation as the live ISO — keep the two in sync
     rsync
 )
 
@@ -82,10 +82,25 @@ setup_resolv_symlink() {
     ln -sf /run/systemd/resolve/stub-resolv.conf "${MOUNT_ROOT}/etc/resolv.conf"
 }
 
-set_passwords_in_chroot() {
-    log "[1/2] set ROOT password — type twice:"
-    arch-chroot "$MOUNT_ROOT" passwd
+# True when the account already has a usable password (passwd -S field 2 = P).
+password_is_set() {
+    local status
+    status=$(arch-chroot "$MOUNT_ROOT" passwd -S "$1" 2>/dev/null | awk '{print $2}') || true
+    [[ "$status" == P* ]]
+}
 
-    log "[2/2] set password for user '${CFG_USERNAME}' — type twice:"
-    arch-chroot "$MOUNT_ROOT" passwd "$CFG_USERNAME"
+set_passwords_in_chroot() {
+    if password_is_set root; then
+        log "[1/2] root password already set — skipping"
+    else
+        log "[1/2] set ROOT password — type twice:"
+        arch-chroot "$MOUNT_ROOT" passwd
+    fi
+
+    if password_is_set "$CFG_USERNAME"; then
+        log "[2/2] password for '${CFG_USERNAME}' already set — skipping"
+    else
+        log "[2/2] set password for user '${CFG_USERNAME}' — type twice:"
+        arch-chroot "$MOUNT_ROOT" passwd "$CFG_USERNAME"
+    fi
 }

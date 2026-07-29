@@ -1,6 +1,8 @@
 ---
-# Install sbctl, create Secure Boot keys, and sign the UKI. Runs on the booted system.
-# Key enrollment into UEFI firmware follows immediately via secure_boot_enroll.yml.
+# Install sbctl, create Secure Boot keys, and sign the full boot chain:
+# systemd-boot (what the firmware verifies first) and the UKI. Runs on the
+# booted system. Key enrollment into UEFI firmware follows immediately via
+# secure_boot_enroll.yml.
 # Pre-condition: UEFI must already be in Setup Mode before this task group runs.
 
 - name: "secure_boot: install sbctl"
@@ -10,15 +12,27 @@
 
 - name: "secure_boot: check if keys already exist"
   ansible.builtin.stat:
-    path: /usr/share/secureboot/keys/db/db.key
+    path: /var/lib/sbctl/keys/db/db.key
   register: sb_keys_stat
+
+- name: "secure_boot: check legacy key location (sbctl < 0.14)"
+  ansible.builtin.stat:
+    path: /usr/share/secureboot/keys/db/db.key
+  register: sb_keys_legacy_stat
 
 - name: "secure_boot: create Secure Boot keys"
   ansible.builtin.command: sbctl create-keys
-  when: not sb_keys_stat.stat.exists
+  when: not (sb_keys_stat.stat.exists or sb_keys_legacy_stat.stat.exists)
   changed_when: true
 
-- name: "secure_boot: sign UKI and register for automatic re-signing"
-  ansible.builtin.command: "sbctl sign -s /boot/EFI/Linux/arch-{{ kernel }}.efi"
+# Sign every EFI binary in the boot chain and register it with sbctl (-s), so
+# the bundled zz-sbctl pacman hook re-signs all of them after kernel,
+# systemd-boot, or firmware-related updates. Signing only the UKI is not
+# enough: the firmware verifies systemd-boot before it ever loads the UKI.
+- name: "secure_boot: sign boot chain and register for automatic re-signing"
+  ansible.builtin.command: "sbctl sign -s {{ item }}"
+  loop:
+    - /boot/EFI/BOOT/BOOTX64.EFI
+    - /boot/EFI/systemd/systemd-bootx64.efi
+    - "/boot/EFI/Linux/arch-{{ kernel }}.efi"
   changed_when: true
-  # sbctl ships zz-sbctl.hook which re-runs sign-all after kernel/bootloader updates.

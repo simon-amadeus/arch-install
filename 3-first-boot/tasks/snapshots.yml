@@ -43,10 +43,11 @@
       EMPTY_PRE_POST_CLEANUP="yes"
       EMPTY_PRE_POST_MIN_AGE="1800"
 
-- name: "snapshots: enable snapper timers"
-  ansible.builtin.command: "systemctl enable {{ item }}"
-  register: enable_result
-  changed_when: "'Created symlink' in enable_result.stderr or 'Created symlink' in enable_result.stdout"
+- name: "snapshots: enable and start snapper timers"
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
   loop:
     - snapper-timeline.timer
     - snapper-cleanup.timer

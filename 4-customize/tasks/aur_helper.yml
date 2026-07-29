@@ -73,8 +73,11 @@
   when: not paru_stat.stat.exists
   changed_when: true
 
+# Only when this run built paru — otherwise a re-run of phase 4 would
+# uninstall a rust toolchain the user installed on purpose.
 - name: "aur: cleanup build dependencies"
   ansible.builtin.package:
     name:
       - rust
     state: absent
+  when: not paru_stat.stat.exists

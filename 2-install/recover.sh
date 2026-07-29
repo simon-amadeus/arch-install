@@ -3,10 +3,14 @@
 #
 # Use this when the Ansible step fails but disk prep + pacstrap completed
 # successfully. Syncs the latest 2-install/ and hosts/ into the chroot then
-# reruns the playbook — no reboot, no repartitioning.
+# reruns the playbook — no repartitioning. Works from a fresh live session
+# too: if /mnt is not mounted it re-opens the LUKS container (by label) and
+# re-mounts the subvolumes first.
 #
-# Usage: ./2-install/recover.sh <hostname>
-# Example: ./2-install/recover.sh xps
+# Extra arguments are passed through to ansible-playbook.
+#
+# Usage: ./2-install/recover.sh <hostname> [ansible args]
+# Example: ./2-install/recover.sh xps --tags dns
 
 set -Eeuo pipefail
 
@@ -19,23 +23,38 @@ trap 'on_err $LINENO' ERR
 
 # shellcheck source=lib/config.sh
 source "${HERE}/lib/config.sh"
+# shellcheck source=lib/disk.sh
+source "${HERE}/lib/disk.sh"
 # shellcheck source=lib/system.sh
 source "${HERE}/lib/system.sh"
-
-MOUNT_ROOT="/mnt"
 
 require_root
 
 host="${1:-}"
-[[ -n "$host" ]] || die "usage: $0 <host>   (e.g. $0 xps)"
+[[ -n "$host" ]] || die "usage: $0 <host> [ansible args]   (e.g. $0 xps --tags dns)"
+shift
 
 host_config="${REPO_ROOT}/hosts/${host}.yml"
 load_host_config "$host_config"
 
-mountpoint -q "${MOUNT_ROOT}" \
-    || die "${MOUNT_ROOT} is not mounted — has install.sh run yet?"
+# Fresh live session (e.g. rebooted back into the ISO): reassemble the
+# LUKS container and subvolume mounts. Partitions are found by the labels
+# install.sh created (FAT label ESP, LUKS2 label cryptsystem).
+if ! mountpoint -q "${MOUNT_ROOT}"; then
+    log "${MOUNT_ROOT} is not mounted — reassembling from disk"
+    ESP_PART="$(blkid -L ESP || true)"
+    LUKS_PART="$(blkid -L cryptsystem || true)"
+    [[ -n "$ESP_PART" && -n "$LUKS_PART" ]] \
+        || die "no partitions labelled ESP/cryptsystem found — has install.sh completed disk prep?"
+    if [[ ! -e "/dev/mapper/${CRYPT_NAME}" ]]; then
+        log "opening LUKS container on ${LUKS_PART} (passphrase prompt)"
+        cryptsetup open "$LUKS_PART" "$CRYPT_NAME"
+    fi
+    btrfs_mount_all
+fi
+
 [[ -d "${MOUNT_ROOT}/usr/bin" ]] \
-    || die "${MOUNT_ROOT}/usr/bin missing — pacstrap has not completed"
+    || die "${MOUNT_ROOT}/usr/bin missing — pacstrap has not completed; re-run install.sh"
 
 log "syncing repo into chroot"
 install -d -m 0700 "${MOUNT_ROOT}/root/install"
@@ -51,9 +70,10 @@ arch-chroot "$MOUNT_ROOT" \
     ansible-playbook \
         -i /root/install/2-install/inventory.ini \
         -e "@/root/install/hosts/${host}.yml" \
-        /root/install/2-install/install.yml
+        /root/install/2-install/install.yml \
+        "$@"
 
 setup_resolv_symlink
 set_passwords_in_chroot
 
-log "recover complete. Unmount with:  umount -R ${MOUNT_ROOT} && swapoff -a && reboot"
+log "recover complete. Unmount with:  swapoff -a && umount -R ${MOUNT_ROOT} && reboot"

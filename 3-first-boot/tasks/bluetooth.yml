@@ -6,7 +6,10 @@
       - bluez-utils
     state: present
 
-- name: "bluetooth: enable bluetooth.service"
-  ansible.builtin.command: systemctl enable bluetooth.service
-  register: enable_result
-  changed_when: "'Created symlink' in enable_result.stderr or 'Created symlink' in enable_result.stdout"
+# Booted system — dbus is available, so unlike phase 2 we can use the systemd
+# module and start the service immediately instead of waiting for a reboot.
+- name: "bluetooth: enable and start bluetooth.service"
+  ansible.builtin.systemd:
+    name: bluetooth.service
+    enabled: true
+    state: started

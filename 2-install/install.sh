@@ -33,7 +33,17 @@ main() {
     load_host_config "$host_config"
 
     require_cmd parted sgdisk wipefs cryptsetup mkfs.btrfs btrfs \
-                pacstrap genfstab arch-chroot reflector
+                pacstrap genfstab arch-chroot reflector curl
+
+    # Fail fast, before anything destructive: the late failure modes here
+    # (bootctl in the chroot, pacstrap without network) hit after the wipe.
+    [[ -d /sys/firmware/efi/efivars ]] \
+        || die "not booted in UEFI mode — this installer requires UEFI (systemd-boot + UKI)"
+    [[ -b "$CFG_DISK" ]] \
+        || die "disk.device is not a block device: ${CFG_DISK}"
+    log "checking network connectivity"
+    curl -sf --max-time 15 -o /dev/null https://archlinux.org \
+        || die "no network — connect first (wifi: iwctl), then re-run"
 
     log "==========================================="
     log "Arch install — host: ${host}"
@@ -54,7 +64,7 @@ main() {
     setup_resolv_symlink
     set_passwords_in_chroot
 
-    log "install complete. Unmount with:  umount -R ${MOUNT_ROOT} && swapoff -a && reboot"
+    log "install complete. Unmount with:  swapoff -a && umount -R ${MOUNT_ROOT} && reboot"
 }
 
 main "$@"

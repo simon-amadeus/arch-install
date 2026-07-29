@@ -2,9 +2,9 @@
 # Build a custom Arch ISO that bakes in:
 #   - this repo at /root/arch-install/
 #   - extra packages: ansible, python, yq, git (so install.sh runs immediately)
-#   - airootfs overlay from iso/airootfs/
+#   - airootfs overlay from 1-build/airootfs/
 #
-# Usage:  ./iso/build.sh [output.iso]
+# Usage:  ./1-build/build.sh [output.iso]
 
 set -Eeuo pipefail
 

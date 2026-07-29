@@ -50,7 +50,7 @@ hostname, reflector_country, timezone, locale, keymap, console_font
 disk: { device, esp_size, swapfile_size }
 kernel, microcode
 user: { name, shell, groups, dotfiles_repo }
-features: { audio, bluetooth, firewalld, desktop, snapshots, secure_boot, tpm2_unlock }
+features: { audio, bluetooth, firewalld, desktop, snapshots, secure_boot }
 ```
 
 ## Usage
@@ -126,8 +126,8 @@ The entire Secure Boot flow runs in phase 3 (booted system). Sequence:
 bash ~/arch-install/3-first-boot/first-boot.sh xps --tags secure_boot
 ```
 
-This creates the sbctl keys, signs the UKI, and enrolls the keys into firmware
-in one pass. The `--microsoft` flag is included so hardware with Microsoft-signed
+This creates the sbctl keys, signs the whole boot chain (systemd-boot and
+the UKI), and enrolls the keys into firmware in one pass. The `--microsoft` flag is included so hardware with Microsoft-signed
 option ROMs (common on XPS) continues to work. The pacman hook bundled with sbctl
 re-signs automatically on every kernel or bootloader update.
 
@@ -142,3 +142,20 @@ bash 2-install/recover.sh xps [--tags <tag>]
 
 Valid phase 2 tags: `locale`, `time`, `hostname`, `network`, `dns`,
 `mkinitcpio`, `bootloader`, `users`, `zsh`, `services`, `autologin`, `stage`.
+
+This also works from a fresh live session (e.g. after rebooting back into
+the ISO): recover.sh finds the partitions by label, re-opens the LUKS
+container (passphrase prompt), and re-mounts the subvolumes before running
+the playbook. Re-running all of install.sh is also safe — it tears down any
+leftover mounts from the failed attempt first (but starts over from the
+disk wipe).
+
+## Caveats
+
+- **Captive portals** (hotel/airport wifi) rely on DNS hijacking, which
+  dnscrypt-proxy deliberately defeats — portal login pages won't load.
+  Temporary escape hatch, using the router as resolver for the session:
+  `resolvectl dns wlan0 <router-ip> && resolvectl domain wlan0 '~.'`,
+  log in, then `resolvectl revert wlan0`.
+- **No hibernation**: the swapfile handles memory pressure only; no
+  `resume=` parameters are configured. Suspend-to-RAM is unaffected.

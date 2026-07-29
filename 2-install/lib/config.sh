@@ -33,8 +33,8 @@ load_host_config() {
     local missing=()
     for v in CFG_HOSTNAME CFG_KEYMAP CFG_TIMEZONE CFG_LOCALE \
              CFG_DISK CFG_ESP_SIZE CFG_SWAPFILE_SIZE \
-             CFG_KERNEL CFG_USERNAME; do
-        local val; eval "val=\${${v}:-}"
+             CFG_KERNEL CFG_MICROCODE CFG_USERNAME; do
+        local val="${!v:-}"
         [[ -n "$val" && "$val" != "null" ]] || missing+=("$v")
     done
     if (( ${#missing[@]} > 0 )); then

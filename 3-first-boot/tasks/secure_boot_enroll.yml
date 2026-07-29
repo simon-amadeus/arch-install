@@ -1,6 +1,10 @@
 ---
-# Enroll the Secure Boot keys (created in phase 2) into the UEFI firmware.
-# Runs on the booted system as part of phase 3.
+# Enroll the Secure Boot keys (created in secure_boot.yml) into the UEFI
+# firmware. Runs on the booted system as part of phase 3.
+#
+# Gated on `sbctl status`: enrollment only runs while the firmware is in
+# Setup Mode, and is skipped once Secure Boot is active — so re-running
+# first-boot.sh after enrollment succeeds instead of failing here.
 #
 # Pre-condition: the UEFI must be in Setup Mode. To enter Setup Mode:
 #   1. Boot into UEFI firmware settings (F2/Del/Esc at POST)
@@ -8,23 +12,31 @@
 #   3. Save and reboot, then re-run:
 #      ./3-first-boot/first-boot.sh <host> --tags secure_boot
 
+- name: "secure_boot: query firmware state via sbctl"
+  ansible.builtin.command: sbctl status --json
+  register: sb_status_raw
+  changed_when: false
+
+- name: "secure_boot: parse sbctl status"
+  ansible.builtin.set_fact:
+    sb_status: "{{ sb_status_raw.stdout | from_json }}"
+
 - name: "secure_boot: enroll keys into UEFI"
   ansible.builtin.command: sbctl enroll-keys --microsoft
-  register: enroll_result
+  when: sb_status.setup_mode | default(false)
   changed_when: true
-  failed_when: false
 
-- name: "secure_boot: fail with instructions if enrollment did not succeed"
+- name: "secure_boot: fail with instructions if firmware is not ready"
   ansible.builtin.fail:
     msg: |
-      Secure Boot enrollment failed: {{ enroll_result.stderr | default(enroll_result.stdout) }}
-
-      The UEFI must be in Setup Mode. To enter Setup Mode:
+      Keys are not enrolled: the UEFI is neither in Setup Mode nor running
+      with Secure Boot enabled. To enter Setup Mode:
         1. Boot into UEFI firmware settings (F2/Del/Esc at POST)
         2. Navigate to Secure Boot → clear or delete all existing keys
         3. Save and reboot, then re-run:
            ./3-first-boot/first-boot.sh <host> --tags secure_boot
+      (If you enrolled keys earlier and merely disabled Secure Boot,
+      re-enable it in the firmware instead.)
   when: >-
-    enroll_result.rc != 0 and
-    'already' not in (enroll_result.stderr | lower) and
-    'already' not in (enroll_result.stdout | lower)
+    not (sb_status.setup_mode | default(false)) and
+    not (sb_status.secure_boot | default(false))

@@ -10,6 +10,20 @@
 CRYPT_NAME="cryptroot"
 MOUNT_ROOT="/mnt"
 
+# Best-effort teardown of a previous partial run so wipefs/sgdisk don't fail
+# on busy devices when install.sh is re-run after a mid-flight failure.
+teardown_previous() {
+    if mountpoint -q "$MOUNT_ROOT"; then
+        log "unmounting leftovers from a previous attempt"
+        swapoff "${MOUNT_ROOT}/swap/swapfile" 2>/dev/null || true
+        umount -R "$MOUNT_ROOT" || true
+    fi
+    if [[ -e "/dev/mapper/${CRYPT_NAME}" ]]; then
+        log "closing leftover LUKS mapping ${CRYPT_NAME}"
+        cryptsetup close "$CRYPT_NAME" || true
+    fi
+}
+
 wipe_disk() {
     log "wiping ${CFG_DISK} (signatures + GPT)"
     wipefs --all --force "$CFG_DISK"
@@ -95,7 +109,9 @@ btrfs_mount_all() {
     # Swap subvol must be mounted with no compression / no CoW for the swapfile.
     mount -o "noatime,subvol=@swap" "$dev" "${MOUNT_ROOT}/swap"
 
-    mount "$ESP_PART" "${MOUNT_ROOT}/boot"
+    # umask=0077: keeps /boot (UKI, systemd-boot random-seed) root-only.
+    # genfstab copies these options into fstab.
+    mount -o umask=0077 "$ESP_PART" "${MOUNT_ROOT}/boot"
 }
 
 create_swapfile() {
@@ -106,7 +122,10 @@ create_swapfile() {
 }
 
 prepare_disk() {
+    log "target disk:"
+    lsblk -dno NAME,SIZE,MODEL "$CFG_DISK" >&2 || true
     confirm "About to DESTROY all data on ${CFG_DISK}"
+    teardown_previous
     wipe_disk
     partition_disk
     format_esp

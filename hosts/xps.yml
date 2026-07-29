@@ -48,7 +48,7 @@ features:
   printing: true
   firewalld: true
   usb_automount: true
-  desktop: sway            # one of: none, minimal, sway
+  desktop: sway            # one of: none, sway
   snapshots: true          # snapper + snap-pac btrfs snapshot automation
   secure_boot: false       # set true once UEFI is in Setup Mode for enrollment
   dotfiles: true           # set true after dotfiles repo is reviewed and restructured
