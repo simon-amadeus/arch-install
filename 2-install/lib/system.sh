@@ -48,10 +48,18 @@ stage_ansible() {
     log "staging repo into ${MOUNT_ROOT}/root/install"
 
     install -d -m 0700 "${MOUNT_ROOT}/root/install"
-    for d in 2-install 3-first-boot 4-customize hosts; do
-        [[ -d "${repo_root}/${d}" ]] && cp -r "${repo_root}/${d}" "${MOUNT_ROOT}/root/install/"
+    # Copy the whole repo rather than a directory whitelist, so files the
+    # later phases need (packages.yml, meta/, …) are staged automatically.
+    # Excluded: 1-build (ISO build tree — can contain a multi-GB ISO); the
+    # glob also skips dotfiles (.git, .gitignore). Stale destination entries
+    # are removed first so re-staging (recover.sh) picks up deletions too.
+    local entry name
+    for entry in "${repo_root}"/*; do
+        name="$(basename "$entry")"
+        [[ "$name" == "1-build" ]] && continue
+        rm -rf "${MOUNT_ROOT:?}/root/install/${name}"
+        cp -r "$entry" "${MOUNT_ROOT}/root/install/"
     done
-    [[ -f "${repo_root}/README.md" ]] && cp "${repo_root}/README.md" "${MOUNT_ROOT}/root/install/" || true
 }
 
 copy_iwd_state() {

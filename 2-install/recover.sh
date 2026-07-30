@@ -57,12 +57,7 @@ fi
     || die "${MOUNT_ROOT}/usr/bin missing — pacstrap has not completed; re-run install.sh"
 
 log "syncing repo into chroot"
-install -d -m 0700 "${MOUNT_ROOT}/root/install"
-for d in 2-install 3-first-boot 4-customize hosts; do
-    rm -rf "${MOUNT_ROOT}/root/install/${d}"
-    [[ -d "${REPO_ROOT}/${d}" ]] && cp -r "${REPO_ROOT}/${d}" "${MOUNT_ROOT}/root/install/"
-done
-[[ -f "${REPO_ROOT}/README.md" ]] && cp "${REPO_ROOT}/README.md" "${MOUNT_ROOT}/root/install/" || true
+stage_ansible "$REPO_ROOT"
 
 log "running ansible playbook inside chroot"
 arch-chroot "$MOUNT_ROOT" \

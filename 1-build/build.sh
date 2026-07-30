@@ -48,8 +48,21 @@ cp -r "$ARCHISO_SOURCE" "$PROFILE_DIR"
 # Allowlist what ships — anything not listed here stays on the build machine.
 # This keeps things like .claude/, *.iso, *.log, editor temp files, and
 # anything else in the working tree from leaking into the ISO.
+SHIP=(1-build 2-install 3-first-boot 4-customize hosts meta packages.yml README.md)
+NO_SHIP=(.gitignore)   # tracked, deliberately not shipped
+
+# Guard: every git-tracked top-level entry must be in SHIP or NO_SHIP, so a
+# new file the later phases might need can't silently miss the ISO and blow
+# up at runtime (as meta/ once did in phase 3).
+while IFS= read -r top; do
+    [[ " ${SHIP[*]} ${NO_SHIP[*]} " == *" ${top} "* ]] || {
+        echo "error: tracked top-level '${top}' is neither in SHIP nor NO_SHIP in 1-build/build.sh" >&2
+        exit 1
+    }
+done < <(git -C "$REPO_ROOT" ls-files | cut -d/ -f1 | sort -u)
+
 mkdir -p "${PROFILE_DIR}/airootfs/root/arch-install"
-for entry in 1-build 2-install 3-first-boot 4-customize hosts README.md; do
+for entry in "${SHIP[@]}"; do
     src="${REPO_ROOT}/${entry}"
     [[ -e "$src" ]] || continue
     if [[ -d "$src" ]]; then
