@@ -1,11 +1,12 @@
 ---
-# Install user packages from the dotfiles package list. Only official-repo
+# Install user packages from the dotfiles manifest. Only official-repo
 # packages are handled here — AUR is interactive and lives in aur-install.sh,
 # which the customize.sh wrapper invokes after this playbook completes.
 #
-# File is written by sync-pkglist.service (pacman -Qqen minus the
-# arch-install baseline in ~/.config/packages/baseline.txt):
-#   ~/.config/packages/pkglist.txt — hand-installed official-repo packages
+# ~/.config/packages/pkglist.txt is a hand-curated manifest (one package
+# per line) of what the user installed on top of arch-install's metas.
+# It is never auto-generated; the dotfiles pkg-drift timer reports any
+# divergence between the manifest and the actually installed packages.
 # Missing file is silently skipped.
 
 - name: "packages: read official package list"

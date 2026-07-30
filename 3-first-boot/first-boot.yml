@@ -11,6 +11,9 @@
   gather_facts: true
   become: true   # sudo password is supplied via ansible-playbook -K
 
+  vars_files:
+    - ../packages.yml
+
   tasks:
     - name: Sanity-check required vars
       ansible.builtin.assert:
@@ -19,9 +22,24 @@
           - features is defined
         fail_msg: "host config is missing required keys"
 
-    - name: CLI tools (bat, lsd, helix, starship, …)
-      ansible.builtin.import_tasks: tasks/cli_tools.yml
-      tags: [cli]
+    # All managed packages arrive as dependencies of this meta-package
+    # (see packages.yml); the task files below only configure them.
+    - name: Meta-package knowone-core (CLI tools + enabled system features)
+      ansible.builtin.import_tasks: ../meta/install_meta.yml
+      tags: [packages]
+      vars:
+        meta_name: knowone-core
+        meta_depends: >-
+          {{ (package_groups.base_extras
+              + package_groups.cli
+              + (package_groups.audio if features.audio | default(false) else [])
+              + (package_groups.bluetooth if features.bluetooth | default(false) else [])
+              + (package_groups.printing if features.printing | default(false) else [])
+              + (package_groups.firewall if features.firewalld | default(false) else [])
+              + (package_groups.usb_automount if features.usb_automount | default(false) else [])
+              + (package_groups.snapshots if features.snapshots | default(false) else [])
+              + (package_groups.secure_boot if features.secure_boot | default(false) else []))
+             | unique | sort }}
 
     - name: Default ~/.zshrc (plugins + starship)
       ansible.builtin.import_tasks: tasks/zsh_defaults.yml
@@ -47,11 +65,6 @@
       ansible.builtin.import_tasks: tasks/printing.yml
       tags: [printing]
       when: features.printing | default(false)
-
-    - name: USB automount (udiskie)
-      ansible.builtin.import_tasks: tasks/usb_automount.yml
-      tags: [usb_automount]
-      when: features.usb_automount | default(false)
 
     - name: Btrfs snapshots (snapper + snap-pac)
       ansible.builtin.import_tasks: tasks/snapshots.yml

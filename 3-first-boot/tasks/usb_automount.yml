@@ -1,5 +1,0 @@
----
-- name: "usb_automount: install udiskie"
-  ansible.builtin.package:
-    name: udiskie
-    state: present

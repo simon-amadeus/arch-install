@@ -10,6 +10,9 @@
   gather_facts: true
   become: true   # sudo password is supplied via ansible-playbook -K
 
+  vars_files:
+    - ../packages.yml
+
   tasks:
     - name: Sanity-check required vars
       ansible.builtin.assert:
@@ -21,6 +24,14 @@
     - name: AUR helper (paru)
       ansible.builtin.import_tasks: tasks/aur_helper.yml
       tags: [aur]
+
+    - name: Meta-package knowone-desktop (sway stack)
+      ansible.builtin.import_tasks: ../meta/install_meta.yml
+      tags: [desktop]
+      when: features.desktop | default('none') == 'sway'
+      vars:
+        meta_name: knowone-desktop
+        meta_depends: "{{ package_groups.desktop_sway | unique | sort }}"
 
     - name: Desktop (sway)
       ansible.builtin.import_tasks: tasks/desktop_sway.yml

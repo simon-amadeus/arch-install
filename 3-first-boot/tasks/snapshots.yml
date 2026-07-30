@@ -6,12 +6,7 @@
 #
 # The @snapshots subvolume is already mounted at /.snapshots by bootstrap.
 
-- name: "snapshots: install snapper and snap-pac"
-  ansible.builtin.package:
-    name:
-      - snapper
-      - snap-pac
-    state: present
+# Packages (snapper, snap-pac) come in via the knowone-core meta.
 
 - name: "snapshots: write root snapper config"
   ansible.builtin.copy:

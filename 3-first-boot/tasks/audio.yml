@@ -1,14 +1,5 @@
 ---
-- name: "audio: install pipewire stack"
-  ansible.builtin.package:
-    name:
-      - pipewire
-      - pipewire-alsa
-      - pipewire-pulse
-      - pipewire-jack
-      - wireplumber
-      - pavucontrol
-    state: present
+# Packages (pipewire stack) come in via the knowone-core meta.
 
 # Linger lets user services (pipewire, wireplumber) start at boot without
 # a graphical login session. Required for headless audio consumers too.

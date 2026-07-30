@@ -1,0 +1,78 @@
+---
+# Build and install a meta-package whose dependencies are the packages
+# arch-install manages (see packages.yml), then mark those dependencies
+# with pacman's "installed as dependency" reason. Result: `pacman -Qqen`
+# lists only the metas plus packages installed by hand — the boundary
+# lives in pacman's database, not in any duplicated list.
+#
+# Expects vars:
+#   meta_name     — e.g. knowone-core
+#   meta_depends  — sorted list of package names
+#
+# Follows the aur_helper.yml pattern: makepkg runs unprivileged as the
+# primary user (-d skips the dep check; pacman -U resolves them), the
+# built package is installed by Ansible as root.
+
+- name: "meta: compute version of {{ meta_name }} from its dependency list"
+  ansible.builtin.set_fact:
+    meta_ver: "{{ (meta_depends | join(' ') | hash('sha1'))[:12] }}"
+
+- name: "meta: check installed version of {{ meta_name }}"
+  ansible.builtin.command: "pacman -Q {{ meta_name }}"
+  register: meta_installed
+  changed_when: false
+  failed_when: false
+
+- name: "meta: build and install {{ meta_name }}"
+  when: meta_installed.rc != 0 or meta_ver not in meta_installed.stdout
+  block:
+    - name: "meta: create build directory"
+      ansible.builtin.file:
+        path: "/home/{{ user.name }}/.cache/arch-install/{{ meta_name }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+
+    - name: "meta: render PKGBUILD"
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../meta/PKGBUILD.j2"
+        dest: "/home/{{ user.name }}/.cache/arch-install/{{ meta_name }}/PKGBUILD"
+        mode: '0644'
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+
+    - name: "meta: build package"
+      ansible.builtin.command:
+        cmd: makepkg -fd --noconfirm --noprogressbar
+        chdir: "/home/{{ user.name }}/.cache/arch-install/{{ meta_name }}"
+      become_user: "{{ user.name }}"
+      changed_when: true
+
+    - name: "meta: find built package"
+      ansible.builtin.find:
+        paths: "/home/{{ user.name }}/.cache/arch-install/{{ meta_name }}"
+        patterns: "{{ meta_name }}-{{ meta_ver }}-*.pkg.tar.zst"
+      register: meta_pkg
+
+    - name: "meta: install {{ meta_name }} with pacman"
+      ansible.builtin.command:
+        cmd: "pacman -U --noconfirm {{ meta_pkg.files[0].path }}"
+      changed_when: true
+
+# Adoption: anything the meta depends on that is still marked "explicitly
+# installed" (pacstrap leftovers, packages from earlier arch-install
+# versions) is demoted to a dependency. Idempotent — the intersection is
+# empty on re-runs.
+- name: "meta: list explicitly installed packages"
+  ansible.builtin.command: pacman -Qqe
+  register: meta_explicit
+  changed_when: false
+
+- name: "meta: adopt managed packages as dependencies of {{ meta_name }}"
+  ansible.builtin.command:
+    cmd: "pacman -D --asdeps {{ meta_adopt | join(' ') }}"
+  vars:
+    meta_adopt: "{{ meta_depends | intersect(meta_explicit.stdout_lines) }}"
+  when: meta_adopt | length > 0
+  changed_when: true

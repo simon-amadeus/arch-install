@@ -90,10 +90,13 @@ After first boot, connect to wifi and run:
 bash ~/arch-install/3-first-boot/first-boot.sh xps
 ```
 
-Installs CLI tools, audio (pipewire), and sets up system services
-(bluetooth, firewall, snapshots). Use `--tags <tag>` to run a single step —
-valid tags: `cli`, `audio`, `bluetooth`, `firewall`, `printing`,
-`usb_automount`, `snapshots`, `secure_boot`.
+Installs the `knowone-core` meta-package (CLI tools plus the packages for
+every enabled feature — see [packages.yml](packages.yml)) and sets up system
+services (bluetooth, firewall, snapshots). All managed packages are pacman
+*dependencies* of the meta, so `pacman -Qqen` stays a clean list of what was
+installed by hand. Use `--tags <tag>` to run a single step — valid tags:
+`packages`, `audio`, `bluetooth`, `firewall`, `printing`, `snapshots`,
+`secure_boot`.
 
 ### 5. Customize
 
@@ -101,9 +104,13 @@ valid tags: `cli`, `audio`, `bluetooth`, `firewall`, `printing`,
 bash ~/arch-install/4-customize/customize.sh xps
 ```
 
-Installs the sway desktop and optionally checks out your dotfiles
-(bare git repo, work-tree `~`) and installs official-repo user packages.
-Valid tags: `aur`, `desktop`, `dotfiles`, `packages`.
+Installs the sway desktop (via the `knowone-desktop` meta-package) and
+optionally checks out your dotfiles (bare git repo, work-tree `~`) and
+installs official-repo user packages from the hand-curated manifest at
+`~/.config/packages/pkglist.txt`. The manifest is never auto-generated —
+the dotfiles `pkg-drift` timer reports divergence between it and the
+actually installed packages so drift is a deliberate decision, not an
+accumulation. Valid tags: `aur`, `desktop`, `dotfiles`, `packages`.
 
 If `features.packages` is true and an AUR package list exists at
 `~/.config/packages/aur_pkglist.txt`, `customize.sh` then hands off to

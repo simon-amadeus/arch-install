@@ -5,10 +5,7 @@
 # secure_boot_enroll.yml.
 # Pre-condition: UEFI must already be in Setup Mode before this task group runs.
 
-- name: "secure_boot: install sbctl"
-  ansible.builtin.package:
-    name: sbctl
-    state: present
+# The sbctl package comes in via the knowone-core meta.
 
 - name: "secure_boot: check if keys already exist"
   ansible.builtin.stat:

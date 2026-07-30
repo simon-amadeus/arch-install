@@ -4,10 +4,7 @@
 # exposure if sshd is enabled later. `mdns` is added only when printing is
 # enabled (needed for CUPS/Avahi printer discovery).
 
-- name: "firewall: install firewalld"
-  ansible.builtin.package:
-    name: firewalld
-    state: present
+# The firewalld package comes in via the knowone-core meta.
 
 - name: "firewall: write hardened public zone"
   ansible.builtin.copy:

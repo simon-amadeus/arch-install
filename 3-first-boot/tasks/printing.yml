@@ -1,11 +1,5 @@
 ---
-- name: "printing: install CUPS and Avahi"
-  ansible.builtin.package:
-    name:
-      - cups
-      - avahi
-      - nss-mdns
-    state: present
+# Packages (cups, avahi, nss-mdns) come in via the knowone-core meta.
 
 - name: "printing: enable mDNS in nsswitch.conf for printer discovery"
   ansible.builtin.lineinfile:

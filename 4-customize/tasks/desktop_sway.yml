@@ -1,46 +1,6 @@
 ---
-- name: "desktop: install sway and wayland stack"
-  ansible.builtin.package:
-    name:
-      # Compositor
-      - sway
-      - swaybg
-      - swaylock
-      - swayidle
-      # Status bar
-      - waybar
-      - ttf-font-awesome        # waybar icons
-      # Launcher
-      - wofi
-      # Terminals
-      - foot                 # sway default ($mod+Return) — works with no config
-      - alacritty            # user-configured terminal (dotfiles)
-      # Notifications
-      - mako
-      # Screenshots
-      - grim
-      - slurp
-      # Clipboard
-      - wl-clipboard
-      # XDG portals (screen sharing, file picker)
-      - xdg-desktop-portal-wlr
-      - xdg-desktop-portal-gtk
-      # User directories
-      - xdg-user-dirs
-      # Auth agent
-      - polkit
-      - polkit-gnome
-      # Fonts
-      - noto-fonts
-      - noto-fonts-emoji
-      - ttf-sourcecodepro-nerd  # terminal font with Nerd Font icons (lsd, starship)
-      # Hardware controls
-      - blueman               # Bluetooth manager (GTK)
-      - brightnessctl
-      - kanshi                # Output configuration (external monitor support)
-      - playerctl
-      - wlsunset
-    state: present
+# Packages (the sway/wayland stack) come in via the knowone-desktop meta —
+# see packages.yml at the repo root.
 
 # Drop-in keyboard layout for sway. The default /etc/sway/config (shipped by
 # the Arch package) ends with `include /etc/sway/config.d/*`, so this applies

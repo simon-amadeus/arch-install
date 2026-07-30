@@ -1,0 +1,117 @@
+# Single source of truth for every package arch-install manages beyond the
+# pacstrap base. These groups are rendered into meta-packages (see meta/):
+# knowone-core in phase 3, knowone-desktop in phase 4. Installing a meta pulls
+# its group members in as *dependencies*, so pacman's own database records
+# which packages arch-install owns — `pacman -Qqen` stays a clean list of the
+# metas plus whatever was installed by hand.
+#
+# To add or remove a managed package, edit the group here and re-run the
+# phase; the meta version is a hash of its dependency list, so changes are
+# picked up automatically.
+
+package_groups:
+
+  # Installed explicitly during earlier phases (pacstrap in phase 2, users,
+  # dns_crypt); listing them here lets the core meta adopt them as deps.
+  base_extras:
+    - ansible
+    - base-devel
+    - btrfs-progs
+    - cryptsetup
+    - dnscrypt-proxy
+    - git
+    - go-yq
+    - iwd
+    - python
+    - rsync
+    - sudo
+    - vim
+    - zsh
+
+  cli:
+    - bat                # cat with syntax highlighting
+    - bottom             # htop replacement (binary: btm)
+    - duf                # df replacement
+    - dust               # du replacement
+    - fd                 # find replacement
+    - helix              # editor (binary: hx)
+    - jq                 # JSON processor
+    - less
+    - lsd                # ls with icons (needs a Nerd Font in the terminal)
+    - man-db             # for man command
+    - openssh            # ssh client and server
+    - ripgrep            # grep replacement
+    - starship           # cross-shell prompt
+    - tealdeer           # tldr client
+    - zsh-autosuggestions      # fish-style inline suggestions
+    - zsh-syntax-highlighting  # real-time command highlighting
+
+  audio:
+    - pipewire
+    - pipewire-alsa
+    - pipewire-pulse
+    - pipewire-jack
+    - wireplumber
+    - pavucontrol
+
+  bluetooth:
+    - bluez
+    - bluez-utils
+
+  printing:
+    - cups
+    - avahi
+    - nss-mdns
+
+  firewall:
+    - firewalld
+
+  snapshots:
+    - snapper
+    - snap-pac
+
+  usb_automount:
+    - udiskie
+
+  secure_boot:
+    - sbctl
+
+  desktop_sway:
+    # Compositor
+    - sway
+    - swaybg
+    - swaylock
+    - swayidle
+    # Status bar
+    - waybar
+    - ttf-font-awesome        # waybar icons
+    # Launcher
+    - wofi
+    # Terminals
+    - foot                 # sway default ($mod+Return) — works with no config
+    - alacritty            # user-configured terminal (dotfiles)
+    # Notifications
+    - mako
+    # Screenshots
+    - grim
+    - slurp
+    # Clipboard
+    - wl-clipboard
+    # XDG portals (screen sharing, file picker)
+    - xdg-desktop-portal-wlr
+    - xdg-desktop-portal-gtk
+    # User directories
+    - xdg-user-dirs
+    # Auth agent
+    - polkit
+    - polkit-gnome
+    # Fonts
+    - noto-fonts
+    - noto-fonts-emoji
+    - ttf-sourcecodepro-nerd  # terminal font with Nerd Font icons (lsd, starship)
+    # Hardware controls
+    - blueman               # Bluetooth manager (GTK)
+    - brightnessctl
+    - kanshi                # Output configuration (external monitor support)
+    - playerctl
+    - wlsunset

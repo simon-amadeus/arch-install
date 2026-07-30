@@ -1,10 +1,5 @@
 ---
-- name: "bluetooth: install bluez"
-  ansible.builtin.package:
-    name:
-      - bluez
-      - bluez-utils
-    state: present
+# Packages (bluez) come in via the knowone-core meta.
 
 # Booted system — dbus is available, so unlike phase 2 we can use the systemd
 # module and start the service immediately instead of waiting for a reboot.
