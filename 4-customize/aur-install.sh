@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Install AUR packages interactively. Reads ~/.config/packages/aur_pkglist.txt
-# (written by sync-pkglist from `pacman -Qqem`).
+# (written by sync-pkglist from `pacman -Qqem` minus the arch-install
+# baseline in ~/.config/packages/baseline.txt).
 #
 # Runs as the primary user. paru will sudo internally when building/installing.
 # No --noconfirm: paru's interactive PKGBUILD review is the whole point — it

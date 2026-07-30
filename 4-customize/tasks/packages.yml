@@ -3,8 +3,9 @@
 # packages are handled here — AUR is interactive and lives in aur-install.sh,
 # which the customize.sh wrapper invokes after this playbook completes.
 #
-# File is written by sync-pkglist.service (pacman -Qqen):
-#   ~/.config/packages/pkglist.txt — official-repo explicit packages
+# File is written by sync-pkglist.service (pacman -Qqen minus the
+# arch-install baseline in ~/.config/packages/baseline.txt):
+#   ~/.config/packages/pkglist.txt — hand-installed official-repo packages
 # Missing file is silently skipped.
 
 - name: "packages: read official package list"
